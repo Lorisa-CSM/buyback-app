@@ -1,0 +1,523 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Product{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --brand-navy: #002D62;
+        --brand-berry: #D21848;
+
+        --page-bg: #f4f7fb;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --surface-soft-2: #fbfcfe;
+
+        --border: #e5ebf3;
+        --border-soft: #eef2f7;
+
+        --text-main: #142033;
+        --text-strong: #0f1728;
+        --text-soft: #667085;
+        --text-muted: #8b95a7;
+
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 4px 12px rgba(16, 24, 40, 0.05);
+
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+
+        --success-bg: #ecfdf3;
+        --success-text: #027a48;
+
+        --warning-bg: #fff7e6;
+        --warning-text: #b54708;
+
+        --danger-bg: #fef3f2;
+        --danger-text: #b42318;
+    }
+
+    .item-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px;
+    }
+
+    .item-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 24px;
+        margin-bottom: 24px;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        padding: 28px 30px;
+    }
+
+    .item-title {
+        margin: 0;
+        font-size: 2rem;
+        line-height: 1.02;
+        color: var(--text-strong);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .item-subtitle {
+        margin: 10px 0 0;
+        color: var(--text-soft);
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .hero-meta {
+        text-align: right;
+    }
+
+    .hero-meta-label {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--text-soft);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+    }
+
+    .hero-meta-value {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--brand-navy);
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        overflow: hidden;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    .section-title {
+        margin: 0 0 18px;
+        font-size: 1.12rem;
+        font-weight: 800;
+        color: var(--text-strong);
+        letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+        margin: -6px 0 18px;
+        color: var(--text-soft);
+        font-size: 0.94rem;
+        line-height: 1.45;
+    }
+
+    form p {
+        margin: 0 0 16px;
+    }
+
+    form label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 700;
+        color: #334155;
+        font-size: 0.92rem;
+    }
+
+    form input,
+    form select,
+    form textarea {
+        width: 100%;
+        max-width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #cfd7e3;
+        background-color: #ffffff;
+        color: var(--text-main);
+        font-size: 14px;
+        border-radius: 12px;
+        box-sizing: border-box;
+        margin: 0;
+    }
+
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+        outline: 2px solid rgba(210, 24, 72, 0.15);
+        border-color: var(--brand-berry);
+    }
+
+    .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .button,
+    .button-secondary,
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.94rem;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .button,
+    button {
+        background: var(--brand-navy);
+        color: #fff;
+    }
+
+    .button:hover,
+    button:hover {
+        background: #083979;
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .button-secondary {
+        background: #fff;
+        color: var(--text-main);
+        border-color: var(--border);
+    }
+
+    .button-secondary:hover {
+        background: #f8fbff;
+        text-decoration: none;
+    }
+
+    .pricing-card {
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow-xs);
+        overflow: hidden;
+    }
+
+    .pricing-card-body {
+        padding: 22px;
+    }
+
+    .pricing-card__header h3 {
+        margin: 0 0 6px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-strong);
+    }
+
+    .pricing-card__header p {
+        margin: 0 0 18px;
+        color: var(--text-soft);
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .pricing-metric {
+        background: #ffffff;
+        border: 1px solid var(--border-soft);
+        border-radius: 14px;
+        padding: 16px;
+    }
+
+    .pricing-metric--wide {
+        grid-column: span 2;
+    }
+
+    .pricing-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+    }
+
+    .pricing-value {
+        font-size: 1.45rem;
+        line-height: 1;
+        font-weight: 800;
+        color: var(--brand-navy);
+        letter-spacing: -0.02em;
+    }
+
+    .pricing-value.is-good {
+        color: #027a48;
+    }
+
+    .pricing-value.is-warn {
+        color: #b54708;
+    }
+
+    .pricing-value.is-bad {
+        color: #b42318;
+    }
+
+    .helper-note {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: var(--surface-soft);
+        color: var(--text-soft);
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    @media (max-width: 920px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .item-shell {
+            padding: 20px;
+        }
+
+        .item-hero {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .hero-meta {
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .item-shell {
+            padding: 16px;
+        }
+
+        .item-title {
+            font-size: 1.75rem;
+        }
+
+        .pricing-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pricing-metric--wide {
+            grid-column: span 1;
+        }
+
+        .button,
+        .button-secondary,
+        button {
+            width: 100%;
+        }
+
+        .button-row {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="item-shell">
+
+    <section class="item-hero">
+        <div>
+            <h1 class="item-title">Edit Product</h1>
+            <p class="item-subtitle">
+                Update this product and review live margin guidance as pricing changes.
+            </p>
+        </div>
+
+        <div class="hero-meta">
+            <span class="hero-meta-label">ISP Number</span>
+            <div class="hero-meta-value">{{ purchase.isp_number }}</div>
+            <span class="hero-meta-label" style="margin-top: 12px;">SKU</span>
+            <div class="hero-meta-value" style="font-size: 1rem;">{{ item.sku }}</div>
+        </div>
+    </section>
+
+    <div class="content-grid">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="section-title">Product Details</h2>
+                <p class="section-subtitle">
+                    Edit the product information below. Pricing metrics update automatically as you type.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <div class="button-row">
+                        <button type="submit">Save Changes</button>
+                        <a href="{% url 'purchase_detail' purchase.id %}" class="button-secondary">Back to Purchase</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="pricing-card">
+            <div class="pricing-card-body">
+                <div class="pricing-card__header">
+                    <h3>Pricing Snapshot</h3>
+                    <p>Live margin and pricing guidance as you update product details.</p>
+                </div>
+
+                <div class="pricing-grid">
+                    <div class="pricing-metric">
+                        <div class="pricing-label">Unit Margin</div>
+                        <div class="pricing-value" id="unitMarginValue">—</div>
+                    </div>
+
+                    <div class="pricing-metric">
+                        <div class="pricing-label">Margin %</div>
+                        <div class="pricing-value" id="marginPercentValue">—</div>
+                    </div>
+
+                    <div class="pricing-metric">
+                        <div class="pricing-label">Line Cost</div>
+                        <div class="pricing-value" id="lineCostValue">—</div>
+                    </div>
+
+                    <div class="pricing-metric">
+                        <div class="pricing-label">Projected Revenue</div>
+                        <div class="pricing-value" id="projectedRevenueValue">—</div>
+                    </div>
+
+                    <div class="pricing-metric pricing-metric--wide">
+                        <div class="pricing-label">Projected Profit</div>
+                        <div class="pricing-value" id="projectedProfitValue">—</div>
+                    </div>
+                </div>
+
+                <div class="helper-note">
+                    Margin is based on retail price minus unit cost. This gives your team immediate feedback on pricing as products are edited.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function parseMoney(value) {
+        if (!value) return 0;
+        const cleaned = String(value).replace(/[^0-9.-]/g, '');
+        const parsed = parseFloat(cleaned);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    function formatMoney(value) {
+        return '$' + value.toFixed(2);
+    }
+
+    function setMetric(el, text, stateClass) {
+        el.textContent = text;
+        el.classList.remove('is-good', 'is-warn', 'is-bad');
+        if (stateClass) {
+            el.classList.add(stateClass);
+        }
+    }
+
+    function updatePricingSnapshot() {
+        const qtyInput = document.getElementById('id_quantity');
+        const costInput = document.getElementById('id_unit_cost');
+        const retailInput = document.getElementById('id_retail_price');
+
+        if (!qtyInput || !costInput || !retailInput) return;
+
+        const qty = parseMoney(qtyInput.value) || 0;
+        const unitCost = parseMoney(costInput.value);
+        const retailPrice = parseMoney(retailInput.value);
+
+        const unitMargin = retailPrice - unitCost;
+        const lineCost = qty * unitCost;
+        const projectedRevenue = qty * retailPrice;
+        const projectedProfit = qty * unitMargin;
+
+        let marginPercent = null;
+        if (retailPrice > 0) {
+            marginPercent = (unitMargin / retailPrice) * 100;
+        }
+
+        const unitMarginEl = document.getElementById('unitMarginValue');
+        const marginPercentEl = document.getElementById('marginPercentValue');
+        const lineCostEl = document.getElementById('lineCostValue');
+        const projectedRevenueEl = document.getElementById('projectedRevenueValue');
+        const projectedProfitEl = document.getElementById('projectedProfitValue');
+
+        if (retailPrice <= 0 && unitCost <= 0 && qty <= 0) {
+            setMetric(unitMarginEl, '—', '');
+            setMetric(marginPercentEl, '—', '');
+            setMetric(lineCostEl, '—', '');
+            setMetric(projectedRevenueEl, '—', '');
+            setMetric(projectedProfitEl, '—', '');
+            return;
+        }
+
+        const marginState =
+            unitMargin < 0 ? 'is-bad' :
+            unitMargin < 5 ? 'is-warn' :
+            'is-good';
+
+        setMetric(unitMarginEl, formatMoney(unitMargin), marginState);
+
+        if (marginPercent === null) {
+            setMetric(marginPercentEl, '—', '');
+        } else {
+            const percentState =
+                marginPercent < 0 ? 'is-bad' :
+                marginPercent < 20 ? 'is-warn' :
+                'is-good';
+
+            setMetric(marginPercentEl, marginPercent.toFixed(1) + '%', percentState);
+        }
+
+        setMetric(lineCostEl, formatMoney(lineCost), '');
+        setMetric(projectedRevenueEl, formatMoney(projectedRevenue), '');
+        setMetric(
+            projectedProfitEl,
+            formatMoney(projectedProfit),
+            projectedProfit < 0 ? 'is-bad' : projectedProfit < 5 ? 'is-warn' : 'is-good'
+        );
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const qtyInput = document.getElementById('id_quantity');
+        const costInput = document.getElementById('id_unit_cost');
+        const retailInput = document.getElementById('id_retail_price');
+
+        [qtyInput, costInput, retailInput].forEach(input => {
+            if (input) {
+                input.addEventListener('input', updatePricingSnapshot);
+                input.addEventListener('change', updatePricingSnapshot);
+            }
+        });
+
+        updatePricingSnapshot();
+    });
+</script>
+{%endblock%}

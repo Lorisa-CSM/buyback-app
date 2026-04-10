@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Download</title>
+</head>
+<body>
+    <h1>Purchase Details</h1>
+    <p><button  onclick="window.print()">Print This Order</button></p>
+    <p><strong>ISP Number:</strong> {{ purchase.isp_number }}</p>
+    <p><strong>Buyer Code:</strong> {{ purchase.buyer_initials }}</p>
+    <p><strong>Location:</strong> {{ purchase.location }}</p>
+    <p><strong>Seller:</strong> {{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</p>
+    <p><strong>Address:</strong> {{ purchase.seller_address }}</p>
+    <p><strong>City/State/Zip:</strong> {{ purchase.seller_city }}, {{ purchase.seller_state }} {{ purchase.seller_zip }}</p>
+    <p><strong>Phone:</strong> {{ purchase.seller_phone }}</p>
+    <p><strong>Email:</strong> {{ purchase.seller_email }}</p>
+    <p><strong>Driver License State:</strong> {{ purchase.drivers_license_state }}</p>
+    <p><strong>Driver License Number:</strong> {{ purchase.drivers_license_number }}</p>
+    <p><strong>Total Purchase Amount:</strong> {{ purchase.purchase_total_amount }}</p>
+    <p><strong>Allocated Total:</strong> {{ purchase.allocation_total_amount }}</p>
+    <p><strong>Difference:</strong> {{ purchase.allocation_difference }}</p>
+    <p><strong>Reconciliation Status:</strong> {{ purchase.reconciliation_status }}</p>
+    <p><strong>Workflow Status:</strong> {{ purchase.workflow_status }}</p>
+
+    <h2>Payment Information</h2>
+    <p><strong>Payment Method:</strong> {{ purchase.payment_method }}</p>
+    <p><strong>Check Number:</strong> {{ purchase.check_number }}</p>
+    <p><strong>Gift Card Last 4:</strong> {{ purchase.gift_card_last4 }}</p>
+    <p><strong>Other Payment Reason:</strong> {{ purchase.payment_other_reason }}</p>
+    <p><strong>Split Payment:</strong> {{ purchase.is_split_payment }}</p>
+    <p><strong>Payment Notes:</strong> {{ purchase.payment_notes }}</p>
+
+    <h2>Products</h2>
+    {% if purchase.items.all %}
+        <table border="1" cellpadding="6">
+            <tr>
+                <th>Product Name</th>
+                <th>SKU</th>
+                <th>Quantity</th>
+                <th>Cost Price</th>
+                <th>Retail Price</th>
+                <th>Line Total</th>
+            </tr>
+            {% for item in purchase.items.all %}
+            <tr>
+                <td>{{ item.title }}</td>
+                <td>{{ item.sku }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_cost }}</td>
+                <td>{{ item.retail_price }}</td>
+                <td>{{ item.line_total_cost }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No products found.</p>
+    {% endif %}
+
+    <h2>History Information</h2>
+    <p><strong>Created At:</strong> {{ purchase.created_at }}</p>
+    <p><strong>Finalized At:</strong> {{ purchase.finalized_at }}</p>
+    <p><strong>Exported At:</strong> {{ purchase.exported_at }}</p>
+    <p><strong>Exported By:</strong> {{ purchase.exported_by }}</p>
+    <p><strong>Export Count:</strong> {{ purchase.export_count }}</p>
+    <p><strong>Reopened At:</strong> {{ purchase.reopened_at }}</p>
+    <p><strong>Reopened By:</strong> {{ purchase.reopened_by }}</p>
+    <p><strong>Reopen Reason:</strong> {{ purchase.reopen_reason }}</p>
+
+    <p><a href="{% url 'purchase_detail' purchase.id %}">Back to Purchase</a></p>
+</body>
+</html>

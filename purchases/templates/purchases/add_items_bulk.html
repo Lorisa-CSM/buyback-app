@@ -1,0 +1,561 @@
+{% extends "base.html" %}
+
+{% block title %}Add Products{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --brand-navy: #002D62;
+        --brand-berry: #D21848;
+        --border: #e5ebf3;
+        --border-soft: #eef2f7;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --text-main: #142033;
+        --text-strong: #0f1728;
+        --text-soft: #667085;
+        --success-bg: #ecfdf3;
+        --success-text: #027a48;
+        --warning-bg: #fff7e6;
+        --warning-text: #b54708;
+        --danger-bg: #fef3f2;
+        --danger-text: #b42318;
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .bulk-shell {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 28px;
+    }
+
+    .bulk-hero,
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+    }
+
+    .bulk-hero {
+        padding: 28px 30px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 24px;
+    }
+
+    .bulk-title {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-strong);
+        letter-spacing: -0.04em;
+    }
+
+    .bulk-subtitle {
+        margin: 10px 0 0;
+        color: var(--text-soft);
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .hero-meta {
+        text-align: right;
+    }
+
+    .hero-meta-label {
+        font-size: 0.78rem;
+        color: var(--text-soft);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .hero-meta-value {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--brand-navy);
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        box-shadow: var(--shadow-xs);
+    }
+
+    .summary-label {
+        font-size: 0.78rem;
+        color: var(--text-soft);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+
+    .summary-value {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: var(--brand-navy);
+    }
+
+    .summary-value.good { color: var(--success-text); }
+    .summary-value.warn { color: var(--warning-text); }
+    .summary-value.bad { color: var(--danger-text); }
+
+    .card {
+        overflow: hidden;
+    }
+
+    .card-body {
+        padding: 22px;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+    th {
+        background: #fbfcfe;
+        color: #7b8794;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-soft);
+    }
+
+    td {
+        padding: 14px 12px;
+        border-bottom: 1px solid var(--border-soft);
+        vertical-align: top;
+        background: #fff;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cfd7e3;
+        background: #fff;
+        color: var(--text-main);
+        font-size: 14px;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: 2px solid rgba(210, 24, 72, 0.15);
+        border-color: var(--brand-berry);
+    }
+
+    .money, .center {
+        text-align: center;
+    }
+
+    .calc-box {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 0.92rem;
+        line-height: 1.35;
+    }
+
+    .calc-box.good { color: var(--success-text); }
+    .calc-box.warn { color: var(--warning-text); }
+    .calc-box.bad { color: var(--danger-text); }
+
+    .row-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 42px;
+    }
+
+    .errorlist {
+        margin: 6px 0 0;
+        padding: 0;
+        list-style: none;
+        color: var(--danger-text);
+        font-size: 0.82rem;
+        line-height: 1.35;
+    }
+
+    .action-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .button,
+    .button-secondary,
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.94rem;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .button,
+    button {
+        background: var(--brand-navy);
+        color: #fff;
+    }
+
+    .button-secondary {
+        background: #fff;
+        color: var(--text-main);
+        border-color: var(--border);
+    }
+
+    .button-danger {
+        background: #fff;
+        color: var(--danger-text);
+        border-color: #f3c7c1;
+    }
+
+    .helper-text {
+        margin-top: 14px;
+        color: var(--text-soft);
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+
+    @media (max-width: 980px) {
+        .bulk-shell { padding: 20px; }
+        .bulk-hero { flex-direction: column; align-items: stretch; }
+        .hero-meta { text-align: left; }
+        .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+        .bulk-shell { padding: 16px; }
+        .summary-grid { grid-template-columns: 1fr; }
+        .action-bar { flex-direction: column; }
+        .button, .button-secondary, .button-danger, button { width: 100%; }
+    }
+</style>
+
+<div class="bulk-shell">
+    <section class="bulk-hero">
+        <div>
+            <h1 class="bulk-title">Add Products</h1>
+            <p class="bulk-subtitle">
+                Enter multiple products on one page with live margin and allocation tracking.
+            </p>
+        </div>
+
+        <div class="hero-meta">
+            <span class="hero-meta-label">ISP Number</span>
+            <div class="hero-meta-value">{{ purchase.isp_number }}</div>
+        </div>
+    </section>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-label">Purchase Total</div>
+            <div class="summary-value" id="purchaseTotalDisplay">${{ purchase.purchase_total_amount|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Allocated Total</div>
+            <div class="summary-value" id="allocatedTotalDisplay">${{ purchase.allocation_total_amount|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Remaining Difference</div>
+            <div class="summary-value" id="remainingDiffDisplay">${{ purchase.allocation_difference|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Projected Revenue</div>
+            <div class="summary-value" id="projectedRevenueDisplay">${{ total_retail|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Avg Margin %</div>
+            <div class="summary-value" id="avgMarginDisplay">{% if avg_margin %}{{ avg_margin|floatformat:1 }}%{% else %}—{% endif %}</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ formset.management_form }}
+
+                <div class="table-wrap">
+                    <table id="bulkItemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 26%;">Title</th>
+                                <th style="width: 8%;" class="center">Qty</th>
+                                <th style="width: 12%;" class="center">Unit Cost</th>
+                                <th style="width: 12%;" class="center">Retail Price</th>
+                                <th style="width: 12%;" class="center">Line Total</th>
+                                <th style="width: 12%;" class="center">Profit</th>
+                                <th style="width: 10%;" class="center">Margin %</th>
+                                <th style="width: 8%;" class="center">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for form in formset %}
+                            <tr class="item-row">
+                                {{ form.id }}
+                                <td>
+                                    {{ form.title }}
+                                    {{ form.title.errors }}
+                                </td>
+                                <td class="center">
+                                    {{ form.quantity }}
+                                    {{ form.quantity.errors }}
+                                </td>
+                                <td class="center">
+                                    {{ form.unit_cost }}
+                                    {{ form.unit_cost.errors }}
+                                </td>
+                                <td class="center">
+                                    {{ form.retail_price }}
+                                    {{ form.retail_price.errors }}
+                                </td>
+                                <td class="center">
+                                    <div class="calc-box line-total">$0.00</div>
+                                </td>
+                                <td class="center">
+                                    <div class="calc-box profit-total">$0.00</div>
+                                </td>
+                                <td class="center">
+                                    <div class="calc-box margin-percent">—</div>
+                                </td>
+                                <td class="center">
+                                    <div class="row-actions">
+                                        {% if form.instance.pk %}
+                                            {{ form.DELETE }}
+                                        {% else %}
+                                            <button type="button" class="button-danger remove-row-btn">Remove</button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="action-bar">
+                    <button type="button" class="button-secondary" id="addRowBtn">Add Another Row</button>
+                    <button type="submit">Save All Products</button>
+                    <a href="{% url 'purchase_detail' purchase.id %}" class="button-secondary">Back to Purchase</a>
+                </div>
+
+                <div class="helper-text">
+                    Recommendation: keep rows with blank titles empty if not using them. Only completed rows should be saved.
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<table style="display:none;">
+    <tbody>
+        <tr id="empty-form-row">
+            {{ formset.empty_form.id }}
+            <td>{{ formset.empty_form.title }}</td>
+            <td class="center">{{ formset.empty_form.quantity }}</td>
+            <td class="center">{{ formset.empty_form.unit_cost }}</td>
+            <td class="center">{{ formset.empty_form.retail_price }}</td>
+            <td class="center"><div class="calc-box line-total">$0.00</div></td>
+            <td class="center"><div class="calc-box profit-total">$0.00</div></td>
+            <td class="center"><div class="calc-box margin-percent">—</div></td>
+            <td class="center">
+                <div class="row-actions">
+                    <button type="button" class="button-danger remove-row-btn">Remove</button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    function parseMoney(value) {
+        if (!value) return 0;
+        const cleaned = String(value).replace(/[^0-9.-]/g, '');
+        const parsed = parseFloat(cleaned);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    function formatMoney(value) {
+        return '$' + value.toFixed(2);
+    }
+
+    function updateRow(row) {
+        const qtyInput = row.querySelector('input[name$="-quantity"]');
+        const costInput = row.querySelector('input[name$="-unit_cost"]');
+        const retailInput = row.querySelector('input[name$="-retail_price"]');
+
+        if (!qtyInput || !costInput || !retailInput) return { lineTotal: 0, revenue: 0, profit: 0, margin: null };
+
+        const qty = parseMoney(qtyInput.value) || 0;
+        const cost = parseMoney(costInput.value);
+        const retail = parseMoney(retailInput.value);
+
+        const lineTotal = qty * cost;
+        const revenue = qty * retail;
+        const profit = revenue - lineTotal;
+        const margin = revenue > 0 ? ((profit / revenue) * 100) : null;
+
+        const lineEl = row.querySelector('.line-total');
+        const profitEl = row.querySelector('.profit-total');
+        const marginEl = row.querySelector('.margin-percent');
+
+        lineEl.textContent = formatMoney(lineTotal);
+        profitEl.textContent = formatMoney(profit);
+        marginEl.textContent = margin === null ? '—' : margin.toFixed(1) + '%';
+
+        [profitEl, marginEl].forEach(el => {
+            el.classList.remove('good', 'warn', 'bad');
+        });
+
+        if (profit < 0 || (margin !== null && margin < 30)) {
+            profitEl.classList.add('bad');
+            marginEl.classList.add('bad');
+        } else if (margin !== null && margin < 50) {
+            profitEl.classList.add('warn');
+            marginEl.classList.add('warn');
+        } else if (margin !== null) {
+            profitEl.classList.add('good');
+            marginEl.classList.add('good');
+        }
+
+        return { lineTotal, revenue, profit, margin };
+    }
+
+    function updateSummary() {
+        const purchaseTotal = parseMoney('{{ purchase.purchase_total_amount }}');
+        let allocated = 0;
+        let revenue = 0;
+        let profit = 0;
+
+        document.querySelectorAll('#bulkItemsTable tbody tr.item-row').forEach(row => {
+            const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            if (deleteCheckbox && deleteCheckbox.checked) return;
+
+            const titleInput = row.querySelector('input[name$="-title"]');
+            const hasTitle = titleInput && titleInput.value.trim() !== '';
+            if (!hasTitle) return;
+
+            const stats = updateRow(row);
+            allocated += stats.lineTotal;
+            revenue += stats.revenue;
+            profit += stats.profit;
+        });
+
+        const remaining = purchaseTotal - allocated;
+        const avgMargin = revenue > 0 ? ((profit / revenue) * 100) : null;
+
+        const allocatedEl = document.getElementById('allocatedTotalDisplay');
+        const remainingEl = document.getElementById('remainingDiffDisplay');
+        const revenueEl = document.getElementById('projectedRevenueDisplay');
+        const avgMarginEl = document.getElementById('avgMarginDisplay');
+
+        allocatedEl.textContent = formatMoney(allocated);
+        remainingEl.textContent = formatMoney(remaining);
+        revenueEl.textContent = formatMoney(revenue);
+        avgMarginEl.textContent = avgMargin === null ? '—' : avgMargin.toFixed(1) + '%';
+
+        [remainingEl, avgMarginEl].forEach(el => {
+            el.classList.remove('good', 'warn', 'bad');
+        });
+
+        if (remaining === 0) {
+            remainingEl.classList.add('good');
+        } else if (remaining > 0) {
+            remainingEl.classList.add('warn');
+        } else {
+            remainingEl.classList.add('bad');
+        }
+
+        if (avgMargin !== null) {
+            if (avgMargin < 30) avgMarginEl.classList.add('bad');
+            else if (avgMargin < 50) avgMarginEl.classList.add('warn');
+            else avgMarginEl.classList.add('good');
+        }
+    }
+
+    function bindRow(row) {
+        row.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updateSummary);
+            input.addEventListener('change', updateSummary);
+        });
+
+        const removeBtn = row.querySelector('.remove-row-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                row.remove();
+                updateSummary();
+            });
+        }
+    }
+
+    function addRow() {
+        const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+        const currentCount = parseInt(totalForms.value, 10);
+
+        const template = document.getElementById('empty-form-row').outerHTML.replace(/__prefix__/g, currentCount);
+        const wrapper = document.createElement('tbody');
+        wrapper.innerHTML = template;
+        const newRow = wrapper.querySelector('tr');
+
+        newRow.classList.add('item-row');
+
+        document.querySelector('#bulkItemsTable tbody').appendChild(newRow);
+        totalForms.value = currentCount + 1;
+
+        const qtyInput = newRow.querySelector('input[name$="-quantity"]');
+        if (qtyInput && !qtyInput.value) qtyInput.value = 1;
+
+        bindRow(newRow);
+        updateSummary();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('#bulkItemsTable tbody tr.item-row').forEach(bindRow);
+
+        document.getElementById('addRowBtn').addEventListener('click', addRow);
+
+        updateSummary();
+    });
+</script>
+{% endblock %}

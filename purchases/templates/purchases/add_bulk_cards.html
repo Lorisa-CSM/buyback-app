@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Add Bulk Cards{% endblock %}
+
+{% block content %}
+<style>
+    .bulk-shell {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 28px;
+    }
+
+    .bulk-card {
+        background: #ffffff;
+        border: 1px solid #e5ebf3;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .bulk-title {
+        margin: 0 0 8px;
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f1728;
+    }
+
+    .bulk-subtitle {
+        margin: 0 0 22px;
+        color: #667085;
+        font-size: 0.98rem;
+        line-height: 1.5;
+    }
+
+    .field {
+        margin-bottom: 18px;
+    }
+
+    .field label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .field input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #cfd7e3;
+        border-radius: 12px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .field input:focus {
+        outline: 2px solid rgba(210, 24, 72, 0.15);
+        border-color: #D21848;
+    }
+
+    .helper-box {
+        margin-bottom: 20px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #eef2f7;
+        color: #667085;
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    .button-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .button,
+    .button-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.94rem;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .button {
+        background: #002D62;
+        color: #fff;
+    }
+
+    .button-secondary {
+        background: #fff;
+        color: #142033;
+        border-color: #e5ebf3;
+    }
+
+    .errorlist {
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+        color: #b42318;
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 640px) {
+        .bulk-shell {
+            padding: 16px;
+        }
+
+        .button-row {
+            flex-direction: column;
+        }
+
+        .button,
+        .button-secondary {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="bulk-shell">
+    <div class="bulk-card">
+        <h1 class="bulk-title">Bulk Cards</h1>
+        <p class="bulk-subtitle">
+            Enter only the total amount paid for this bulk card purchase.
+        </p>
+
+        <div class="helper-box">
+            The system will automatically assign quantity, retail value, and margin.
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="field">
+                {{ form.total_cost.label_tag }}
+                {{ form.total_cost }}
+                {{ form.total_cost.errors }}
+            </div>
+
+            <div class="button-row">
+                <button type="submit" class="button">Save Bulk Cards</button>
+                <a href="{% url 'purchase_detail' purchase.id %}" class="button-secondary">Back to Purchase</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

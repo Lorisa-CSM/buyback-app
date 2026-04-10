@@ -1,0 +1,883 @@
+{% extends "base.html" %}
+
+{% block title %}Create Purchase{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --brand-navy: #002D62;
+        --brand-berry: #D21848;
+
+        --page-bg: #f4f7fb;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --surface-soft-2: #fbfcfe;
+
+        --border: #e5ebf3;
+        --border-soft: #eef2f7;
+
+        --text-main: #142033;
+        --text-strong: #0f1728;
+        --text-soft: #667085;
+        --text-muted: #8b95a7;
+
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 4px 12px rgba(16, 24, 40, 0.05);
+
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+
+        --success-bg: #ecfdf3;
+        --success-text: #027a48;
+
+        --warning-bg: #fff7e6;
+        --warning-text: #b54708;
+
+        --danger-bg: #fef3f2;
+        --danger-text: #b42318;
+    }
+
+    .purchase-shell {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px;
+    }
+
+    .purchase-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 24px;
+        margin-bottom: 24px;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        padding: 28px 30px;
+    }
+
+    .purchase-title {
+        margin: 0;
+        font-size: 2.2rem;
+        line-height: 1.02;
+        color: var(--text-strong);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .purchase-subtitle {
+        margin: 10px 0 0;
+        color: var(--text-soft);
+        font-size: 1rem;
+        line-height: 1.5;
+        max-width: 760px;
+    }
+
+    .hero-side {
+        text-align: right;
+    }
+
+    .hero-side-label {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--text-soft);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+    }
+
+    .hero-side-value {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--brand-navy);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        overflow: hidden;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    .section-title {
+        margin: 0 0 8px;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-strong);
+        letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+        margin: 0 0 20px;
+        color: var(--text-soft);
+        font-size: 0.94rem;
+        line-height: 1.45;
+    }
+
+    .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px 18px;
+    }
+
+    .field-grid .full {
+        grid-column: span 2;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field label {
+        display: block;
+        font-weight: 700;
+        color: #334155;
+        font-size: 0.92rem;
+        margin: 0;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+        width: 100%;
+        max-width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #cfd7e3;
+        background-color: #ffffff;
+        color: var(--text-main);
+        font-size: 14px;
+        border-radius: 12px;
+        box-sizing: border-box;
+        margin: 0;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+        outline: 2px solid rgba(210, 24, 72, 0.15);
+        border-color: var(--brand-berry);
+    }
+
+    .field textarea {
+        min-height: 140px;
+        resize: vertical;
+    }
+
+    .field-help {
+        color: var(--text-soft);
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+
+    .checkbox-field {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 46px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .checkbox-field input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        accent-color: var(--brand-navy);
+        flex: 0 0 auto;
+    }
+
+    .checkbox-field label {
+        margin: 0;
+        font-size: 0.93rem;
+        font-weight: 700;
+        color: var(--text-main);
+        cursor: pointer;
+    }
+
+    .error-list {
+        margin: 0 0 18px;
+        padding: 14px 16px;
+        list-style: none;
+        border-radius: 12px;
+        background: var(--danger-bg);
+        color: var(--danger-text);
+        border: 1px solid #f3c7c1;
+    }
+
+    .error-list li + li {
+        margin-top: 6px;
+    }
+
+    .field-errors {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: var(--danger-text);
+        font-size: 0.83rem;
+        line-height: 1.35;
+    }
+
+    .summary-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .summary-box {
+        padding: 18px;
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius-md);
+        background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+    }
+
+    .summary-box h3 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+        color: var(--text-strong);
+    }
+
+    .summary-box p {
+        margin: 0;
+        color: var(--text-soft);
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    .summary-pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.02em;
+        background: #f2f4f7;
+        color: #475467;
+    }
+
+    .status-pill--navy {
+        background: rgba(0, 45, 98, 0.08);
+        color: var(--brand-navy);
+    }
+
+    .status-pill--berry {
+        background: rgba(210, 24, 72, 0.08);
+        color: var(--brand-berry);
+    }
+
+    .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .button,
+    .button-secondary,
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.94rem;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .button,
+    button {
+        background: var(--brand-navy);
+        color: #fff;
+    }
+
+    .button:hover,
+    button:hover {
+        background: #083979;
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .button-secondary {
+        background: #fff;
+        color: var(--text-main);
+        border-color: var(--border);
+    }
+
+    .button-secondary:hover {
+        background: #f8fbff;
+        text-decoration: none;
+    }
+
+    .is-hidden {
+        display: none;
+    }
+
+    @media (max-width: 980px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .purchase-shell {
+            padding: 20px;
+        }
+
+        .purchase-hero {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .hero-side {
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .purchase-shell {
+            padding: 16px;
+        }
+
+        .purchase-title {
+            font-size: 1.8rem;
+        }
+
+        .field-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .field-grid .full {
+            grid-column: span 1;
+        }
+
+        .button-row {
+            flex-direction: column;
+        }
+
+        .button,
+        .button-secondary,
+        button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="purchase-shell">
+    <section class="purchase-hero">
+        <div>
+            <h1 class="purchase-title">Create Purchase</h1>
+            <p class="purchase-subtitle">
+                Start a new purchase record, capture seller information, and document payment details cleanly from the start.
+            </p>
+        </div>
+
+        <div class="hero-side">
+            <span class="hero-side-label">Workflow</span>
+            <div class="hero-side-value">New Draft</div>
+        </div>
+    </section>
+
+    {% if form.non_field_errors %}
+        <ul class="error-list">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-grid">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="section-title">Seller Information</h2>
+                    <p class="section-subtitle">
+                        Capture the seller’s contact and identification details.
+                    </p>
+
+                    <div class="field-grid">
+                        <div class="field full">
+                            <label for="{{ form.location.id_for_label }}">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.location.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.seller_first_name.id_for_label }}">First Name</label>
+                            {{ form.seller_first_name }}
+                            {% if form.seller_first_name.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_first_name.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.seller_last_name.id_for_label }}">Last Name</label>
+                            {{ form.seller_last_name }}
+                            {% if form.seller_last_name.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_last_name.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full">
+                            <label for="{{ form.seller_address.id_for_label }}">Address</label>
+                            {{ form.seller_address }}
+                            {% if form.seller_address.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_address.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.seller_city.id_for_label }}">City</label>
+                            {{ form.seller_city }}
+                            {% if form.seller_city.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_city.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.seller_state.id_for_label }}">State</label>
+                            {{ form.seller_state }}
+                            {% if form.seller_state.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_state.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.seller_zip.id_for_label }}">Zip</label>
+                            {{ form.seller_zip }}
+                            {% if form.seller_zip.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_zip.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.seller_phone.id_for_label }}">Phone</label>
+                            {{ form.seller_phone }}
+                            {% if form.seller_phone.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_phone.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full">
+                            <label for="{{ form.seller_email.id_for_label }}">Email</label>
+                            {{ form.seller_email }}
+                            {% if form.seller_email.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.seller_email.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.drivers_license_state.id_for_label }}">Driver’s License State</label>
+                            {{ form.drivers_license_state }}
+                            {% if form.drivers_license_state.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.drivers_license_state.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label for="{{ form.drivers_license_number.id_for_label }}">Driver’s License Number</label>
+                            {{ form.drivers_license_number }}
+                            {% if form.drivers_license_number.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.drivers_license_number.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="section-title">Purchase & Payment</h2>
+                    <p class="section-subtitle">
+                        Document total amount, payment method, and any supporting notes.
+                    </p>
+
+                    <div class="summary-panel">
+                        <div class="summary-box">
+                            <h3>Before you save</h3>
+                            <p>Choose the payment method carefully. Additional fields will appear only when needed.</p>
+                            <div class="summary-pill-row">
+                                <span class="status-pill status-pill--navy">Draft Purchase</span>
+                                <span class="status-pill status-pill--berry">Payment Validation</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-grid" style="margin-top: 18px;">
+                        <div class="field full">
+                            <label for="{{ form.purchase_total_amount.id_for_label }}">Purchase Total Amount</label>
+                            {{ form.purchase_total_amount }}
+                            {% if form.purchase_total_amount.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.purchase_total_amount.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full">
+                            <label for="{{ form.payment_method.id_for_label }}">Payment Method</label>
+                            {{ form.payment_method }}
+                            {% if form.payment_method.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.payment_method.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="primary-payment-amount-wrap">
+                            <label for="{{ form.primary_payment_amount.id_for_label }}">First Payment Amount</label>
+                            {{ form.primary_payment_amount }}
+                            {% if form.primary_payment_amount.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.primary_payment_amount.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="check-number-wrap">
+                            <label for="{{ form.check_number.id_for_label }}">Check Number</label>
+                            {{ form.check_number }}
+                            {% if form.check_number.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.check_number.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="gift-card-wrap">
+                            <label for="{{ form.gift_card_last4.id_for_label }}">Gift Card Last 4</label>
+                            {{ form.gift_card_last4 }}
+                            {% if form.gift_card_last4.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.gift_card_last4.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="payment-other-wrap">
+                            <label for="{{ form.payment_other_reason.id_for_label }}">Payment Other Reason</label>
+                            {{ form.payment_other_reason }}
+                            {% if form.payment_other_reason.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.payment_other_reason.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full">
+                            <div class="checkbox-field">
+                                {{ form.is_split_payment }}
+                                <label for="{{ form.is_split_payment.id_for_label }}">Is Split Payment</label>
+                            </div>
+                            {% if form.is_split_payment.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.is_split_payment.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="second-payment-method-wrap">
+                            <label for="{{ form.second_payment_method.id_for_label }}">Second Payment Method</label>
+                            {{ form.second_payment_method }}
+                            {% if form.second_payment_method.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.second_payment_method.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="second-payment-amount-wrap">
+                            <label for="{{ form.second_payment_amount.id_for_label }}">Second Payment Amount</label>
+                            {{ form.second_payment_amount }}
+                            {% if form.second_payment_amount.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.second_payment_amount.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div id="balance-indicator" class="field-help"></div>
+
+                        <div class="field full is-hidden" id="second-check-number-wrap">
+                            <label for="{{ form.second_check_number.id_for_label }}">Second Check Number</label>
+                            {{ form.second_check_number }}
+                            {% if form.second_check_number.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.second_check_number.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="second-gift-card-wrap">
+                            <label for="{{ form.second_gift_card_last4.id_for_label }}">Second Gift Card Last 4</label>
+                            {{ form.second_gift_card_last4 }}
+                            {% if form.second_gift_card_last4.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.second_gift_card_last4.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="second-payment-other-wrap">
+                            <label for="{{ form.second_payment_other_reason.id_for_label }}">Second Payment Other Reason</label>
+                            {{ form.second_payment_other_reason }}
+                            {% if form.second_payment_other_reason.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.second_payment_other_reason.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="field full is-hidden" id="payment-notes-wrap">
+                            <label for="{{ form.payment_notes.id_for_label }}">Payment Notes</label>
+                            {{ form.payment_notes }}
+                            <div class="field-help">Required if split payment is used.</div>
+                            {% if form.payment_notes.errors %}
+                                <ul class="field-errors">
+                                    {% for error in form.payment_notes.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="button-row">
+                        <button type="submit">Save Purchase</button>
+                        <a href="{% url 'resume_purchase' %}" class="button-secondary">Resume Existing Purchase</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updatePaymentFields() {
+        const paymentMethodEl = document.getElementById('{{ form.payment_method.id_for_label }}');
+        const splitPaymentEl = document.getElementById('{{ form.is_split_payment.id_for_label }}');
+        const secondPaymentMethodEl = document.getElementById('{{ form.second_payment_method.id_for_label }}');
+
+        const primaryAmountWrap = document.getElementById('primary-payment-amount-wrap');
+        const secondAmountWrap = document.getElementById('second-payment-amount-wrap');
+
+        const checkWrap = document.getElementById('check-number-wrap');
+        const giftWrap = document.getElementById('gift-card-wrap');
+        const otherWrap = document.getElementById('payment-other-wrap');
+
+        const secondMethodWrap = document.getElementById('second-payment-method-wrap');
+        const secondCheckWrap = document.getElementById('second-check-number-wrap');
+        const secondGiftWrap = document.getElementById('second-gift-card-wrap');
+        const secondOtherWrap = document.getElementById('second-payment-other-wrap');
+        const notesWrap = document.getElementById('payment-notes-wrap');
+
+        const paymentValue = paymentMethodEl ? paymentMethodEl.value : '';
+        const isSplit = splitPaymentEl ? splitPaymentEl.checked : false;
+        const secondPaymentValue = secondPaymentMethodEl ? secondPaymentMethodEl.value : '';
+
+        if (checkWrap) checkWrap.classList.toggle('is-hidden', paymentValue !== 'check');
+        if (giftWrap) giftWrap.classList.toggle('is-hidden', paymentValue !== 'gift_card');
+        if (otherWrap) otherWrap.classList.toggle('is-hidden', paymentValue !== 'other');
+
+        if (primaryAmountWrap) primaryAmountWrap.classList.toggle('is-hidden', !isSplit);
+        if (secondMethodWrap) secondMethodWrap.classList.toggle('is-hidden', !isSplit);
+        if (secondAmountWrap) secondAmountWrap.classList.toggle('is-hidden', !isSplit);
+        if (notesWrap) notesWrap.classList.toggle('is-hidden', !isSplit);
+
+        if (secondCheckWrap) secondCheckWrap.classList.toggle('is-hidden', !isSplit || secondPaymentValue !== 'check');
+        if (secondGiftWrap) secondGiftWrap.classList.toggle('is-hidden', !isSplit || secondPaymentValue !== 'gift_card');
+        if (secondOtherWrap) secondOtherWrap.classList.toggle('is-hidden', !isSplit || secondPaymentValue !== 'other');
+    }
+
+    function autoCalculateSecondPayment() {
+        const totalEl = document.getElementById('{{ form.purchase_total_amount.id_for_label }}');
+        const primaryEl = document.getElementById('{{ form.primary_payment_amount.id_for_label }}');
+        const secondEl = document.getElementById('{{ form.second_payment_amount.id_for_label }}');
+        const splitEl = document.getElementById('{{ form.is_split_payment.id_for_label }}');
+
+        if (!totalEl || !primaryEl || !secondEl || !splitEl) return;
+        if (!splitEl.checked) return;
+
+        const total = parseFloat(totalEl.value) || 0;
+        const primary = parseFloat(primaryEl.value) || 0;
+        const second = total - primary;
+
+        if (second >= 0) {
+            secondEl.value = second.toFixed(2);
+        }
+    }
+
+    function updateBalanceIndicator() {
+        const totalEl = document.getElementById('{{ form.purchase_total_amount.id_for_label }}');
+        const primaryEl = document.getElementById('{{ form.primary_payment_amount.id_for_label }}');
+        const secondEl = document.getElementById('{{ form.second_payment_amount.id_for_label }}');
+        const indicator = document.getElementById('balance-indicator');
+        const splitEl = document.getElementById('{{ form.is_split_payment.id_for_label }}');
+
+        if (!totalEl || !primaryEl || !secondEl || !indicator || !splitEl) return;
+
+        if (!splitEl.checked) {
+            indicator.textContent = '';
+            return;
+        }
+
+        const total = parseFloat(totalEl.value) || 0;
+        const primary = parseFloat(primaryEl.value) || 0;
+        const second = parseFloat(secondEl.value) || 0;
+        const diff = total - (primary + second);
+
+        if (Math.abs(diff) < 0.01) {
+            indicator.textContent = 'Balanced';
+            indicator.style.color = '#027a48';
+        } else {
+            indicator.textContent = `Remaining: $${diff.toFixed(2)}`;
+            indicator.style.color = '#b42318';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const paymentMethodEl = document.getElementById('{{ form.payment_method.id_for_label }}');
+        const splitPaymentEl = document.getElementById('{{ form.is_split_payment.id_for_label }}');
+        const secondPaymentMethodEl = document.getElementById('{{ form.second_payment_method.id_for_label }}');
+        const totalEl = document.getElementById('{{ form.purchase_total_amount.id_for_label }}');
+        const primaryEl = document.getElementById('{{ form.primary_payment_amount.id_for_label }}');
+        const secondEl = document.getElementById('{{ form.second_payment_amount.id_for_label }}');
+
+        if (paymentMethodEl) {
+            paymentMethodEl.addEventListener('change', updatePaymentFields);
+        }
+
+        if (splitPaymentEl) {
+            splitPaymentEl.addEventListener('change', updatePaymentFields);
+            splitPaymentEl.addEventListener('change', updateBalanceIndicator);
+        }
+
+        if (secondPaymentMethodEl) {
+            secondPaymentMethodEl.addEventListener('change', updatePaymentFields);
+        }
+
+        if (totalEl) {
+            totalEl.addEventListener('input', autoCalculateSecondPayment);
+            totalEl.addEventListener('input', updateBalanceIndicator);
+        }
+
+        if (primaryEl) {
+            primaryEl.addEventListener('input', autoCalculateSecondPayment);
+            primaryEl.addEventListener('input', updateBalanceIndicator);
+        }
+
+        if (secondEl) {
+            secondEl.addEventListener('input', updateBalanceIndicator);
+        }
+
+        updatePaymentFields();
+        autoCalculateSecondPayment();
+        updateBalanceIndicator();
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,921 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --brand-navy: #002D62;
+        --brand-berry: #D21848;
+
+        --page-bg: #f4f7fb;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+
+        --border: #e5ebf3;
+        --border-soft: #eef2f7;
+
+        --text-main: #142033;
+        --text-strong: #0f1728;
+        --text-soft: #667085;
+        --text-muted: #8b95a7;
+
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 4px 12px rgba(16, 24, 40, 0.05);
+
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+
+        --success-bg: #ecfdf3;
+        --success-text: #027a48;
+
+        --warning-bg: #fff7e6;
+        --warning-text: #b54708;
+
+        --danger-bg: #fef3f2;
+        --danger-text: #b42318;
+    }
+
+    .admin-shell {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .admin-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 20px;
+        margin-bottom: 18px;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        padding: 22px 24px;
+    }
+
+    .admin-title {
+        margin: 0;
+        font-size: 1.95rem;
+        line-height: 1.05;
+        color: var(--text-strong);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .admin-subtitle {
+        margin: 8px 0 0;
+        color: var(--text-soft);
+        font-size: 0.95rem;
+        line-height: 1.45;
+        max-width: 760px;
+    }
+
+    .hero-side {
+        text-align: right;
+    }
+
+    .hero-side-label {
+        display: block;
+        font-size: 0.76rem;
+        color: var(--text-soft);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+
+    .hero-side-value {
+        font-size: 0.98rem;
+        font-weight: 800;
+        color: var(--brand-navy);
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .kpi-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-xs);
+        padding: 14px 16px;
+        text-align: center;
+    }
+
+    .kpi-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-soft);
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .kpi-value {
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: var(--text-strong);
+        line-height: 1.05;
+    }
+
+    .kpi-value--success { color: var(--success-text); }
+    .kpi-value--warning { color: var(--warning-text); }
+    .kpi-value--danger { color: var(--danger-text); }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        overflow: hidden;
+    }
+
+    .card-body {
+        padding: 18px 20px;
+    }
+
+    .section-title {
+        margin: 0 0 4px;
+        font-size: 1.02rem;
+        font-weight: 800;
+        color: var(--text-strong);
+        letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+        margin: 0 0 14px;
+        color: var(--text-soft);
+        font-size: 0.88rem;
+        line-height: 1.4;
+    }
+
+    .filters-card,
+    .table-card,
+    .summary-card {
+        margin-bottom: 18px;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 14px;
+        align-items: end;
+    }
+
+    .search-row {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) auto auto auto;
+        gap: 10px;
+        align-items: end;
+        margin-top: 14px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .field label {
+        display: block;
+        font-weight: 700;
+        color: #334155;
+        font-size: 0.86rem;
+        margin: 0;
+    }
+
+    .field input,
+    .field select {
+        width: 100%;
+        max-width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid #cfd7e3;
+        background-color: #ffffff;
+        color: var(--text-main);
+        font-size: 14px;
+        border-radius: 12px;
+        box-sizing: border-box;
+        margin: 0;
+    }
+
+    .field input:focus,
+    .field select:focus {
+        outline: 2px solid rgba(210, 24, 72, 0.15);
+        border-color: var(--brand-berry);
+    }
+
+    .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .button,
+    .button-secondary,
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        white-space: nowrap;
+    }
+
+    .button,
+    button {
+        background: var(--brand-navy);
+        color: #fff;
+    }
+
+    .button:hover,
+    button:hover {
+        background: #083979;
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .button-secondary {
+        background: #fff;
+        color: var(--text-main);
+        border-color: var(--border);
+    }
+
+    .button-secondary:hover {
+        background: #f8fbff;
+        text-decoration: none;
+    }
+
+    .two-col-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius-md);
+        background: #fff;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 880px;
+    }
+
+    .summary-table {
+    min-width: 100%;
+    }
+
+    .summary-table th,
+    .summary-table td {
+        padding: 10px 12px;
+    }
+
+    .summary-table .col-code,
+    .summary-table .col-location {
+        white-space: nowrap;
+        width: 38%;
+    }
+
+    .summary-table .col-count {
+        width: 18%;
+        white-space: nowrap;
+    }
+
+    .summary-table .col-total,
+    .summary-table .col-margin {
+        width: 22%;
+        white-space: nowrap;
+    }
+
+    th,
+    td {
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-soft);
+        vertical-align: middle;
+    }
+
+    th {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-soft);
+        font-weight: 800;
+        background: #fcfdff;
+    }
+
+    td {
+        font-size: 0.9rem;
+        color: var(--text-main);
+    }
+
+    td {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .table-wrap tr:hover td {
+        background: #f8fafc;
+        transition: background 0.15s ease;
+    }
+
+    .cell-strong {
+        font-weight: 700;
+        color: var(--brand-navy);
+    }
+
+    .cell-money {
+        font-weight: 700;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.02em;
+        background: #f2f4f7;
+        color: #475467;
+        white-space: nowrap;
+    }
+
+    .status-pill--success {
+        background: #ecfdf3;
+        color: #027a48;
+    }
+
+    .status-pill--warning {
+        background: #fff7e6;
+        color: #b54708;
+    }
+
+    .status-pill--danger {
+        background: #fef3f2;
+        color: #b42318;
+    }
+
+    .status-pill--draft {
+        background: rgba(0, 45, 98, 0.08);
+        color: var(--brand-navy);
+    }
+
+    .status-pill--neutral {
+        background: #f2f4f7;
+        color: #475467;
+    }
+
+    .section-header-compact {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .section-count {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-soft);
+    }
+
+    .empty-state {
+        color: var(--text-soft);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .col-isp,
+    .cell-isp {
+        white-space: nowrap;
+    }
+
+    @media (max-width: 1200px) {
+        .kpi-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .filter-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .search-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 980px) {
+        .admin-shell {
+            padding: 18px;
+        }
+
+        .admin-hero {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .hero-side {
+            text-align: left;
+        }
+
+        .two-col-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .search-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .admin-shell {
+            padding: 14px;
+        }
+
+        .admin-title {
+            font-size: 1.65rem;
+        }
+
+        .kpi-grid,
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .button-row {
+            flex-direction: column;
+        }
+
+        .button,
+        .button-secondary,
+        button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+    <div>
+        <h1 class="admin-title">Admin Dashboard</h1>
+        <p class="admin-subtitle">
+            Review purchase activity, filter by buyer, location, status, payment method, and monitor performance.
+        </p>
+    </div>
+    <div style="margin-bottom: 16px; font-weight: 600; color: #b42318;">
+        Initial release for workflow validation. Please provide feedback - major changes will be reviewed before implemenations.
+    </div>
+</div>
+    </section>
+
+    <section class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">Total Purchases</div>
+            <div class="kpi-value">{{ total_purchases }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Total Purchase</div>
+            <div class="kpi-value">${{ total_purchase_amount|floatformat:2 }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Margin</div>
+            <div class="kpi-value">{{ avg_margin|default:"—" }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Fix Required</div>
+            <div class="kpi-value kpi-value--warning">{{ fix_required_count }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">In Progress</div>
+            <div class="kpi-value">{{ in_progress_count }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Completed</div>
+            <div class="kpi-value kpi-value--success">{{ completed_count }}</div>
+        </div>
+    </section>
+
+    <section class="card filters-card">
+        <div class="card-body">
+            <div class="section-header-compact">
+                <div>
+                    <h2 class="section-title">Filters</h2>
+                    <p class="section-subtitle">Filter purchases by date, buyer, location, status, payment method, or search.</p>
+                </div>
+            </div>
+
+            <form method="get">
+                <div class="filter-grid">
+                    <div class="field">
+                        <label for="date_from">Date From</label>
+                        <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+                    </div>
+
+                    <div class="field">
+                        <label for="date_to">Date To</label>
+                        <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+                    </div>
+
+                    <div class="field">
+                        <label for="buyer">Buyer</label>
+                        <select id="buyer" name="buyer">
+                            <option value="">All Buyers</option>
+                            {% for buyer_code in buyer_choices %}
+                                <option value="{{ buyer_code }}" {% if buyer_filter == buyer_code %}selected{% endif %}>{{ buyer_code }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="location">Location</label>
+                        <select id="location" name="location">
+                            <option value="">All Locations</option>
+                            {% for location in location_choices %}
+                                <option value="{{ location }}" {% if location_filter == location %}selected{% endif %}>{{ location }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
+                            <option value="fix_required" {% if status_filter == "fix_required" %}selected{% endif %}>Fix Required</option>
+                            <option value="in_progress" {% if status_filter == "in_progress" %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if status_filter == "completed" %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="payment_method">Payment Method</label>
+                        <select id="payment_method" name="payment_method">
+                            <option value="" {% if not payment_filter %}selected{% endif %}>All Payment Methods</option>
+                            <option value="cash" {% if payment_filter == "cash" %}selected{% endif %}>Cash</option>
+                            <option value="check" {% if payment_filter == "check" %}selected{% endif %}>Check</option>
+                            <option value="gift_card" {% if payment_filter == "gift_card" %}selected{% endif %}>Gift Card</option>
+                            <option value="other" {% if payment_filter == "other" %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="export_status">Export Status</label>
+                        <select id="export_status" name="export_status">
+                            <option value="">All</option>
+                            <option value="not_exported" {% if export_status == "not_exported" %}selected{% endif %}>Not Exported</option>
+                            <option value="exported" {% if export_status == "exported" %}selected{% endif %}>Exported</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="search-row">
+                    <div class="field">
+                        <label for="q">Search</label>
+                        <input type="text" id="q" name="q" value="{{ query }}" placeholder="Search by ISP, seller, or buyer...">
+                    </div>
+
+                    <button type="submit">Apply Filters</button>
+                    <a href="{% url 'admin_dashboard' %}" class="button-secondary">Clear Filters</a>
+                    <a
+                        href="{% url 'export_filtered_finalized_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&payment_method={{ payment_filter|urlencode }}&q={{ query|urlencode }}"
+                        class="button-secondary"
+                    >
+                        Export Finalized CSV
+                    </a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="two-col-grid">
+        <div class="card summary-card">
+            <div class="card-body">
+                <div class="section-header-compact">
+                    <h2 class="section-title">Buyer Performance</h2>
+                </div>
+                <p class="section-subtitle">Completed purchase volume and average margin by buyer.</p>
+
+                {% if buyer_summary_rows %}
+                    <div class="table-wrap">
+                        <table class="summary-table">
+                            <tr>
+                                <th>Buyer</th>
+                                <th>Purchases</th>
+                                <th>Total</th>
+                                <th>Avg Margin</th>
+                            </tr>
+                            {% for row in buyer_summary_rows %}
+                                <tr>
+                                    <td class="cell-strong">{{ row.buyer_code }}</td>
+                                    <td>{{ row.purchase_count }}</td>
+                                    <td class="cell-money">${{ row.purchase_total|floatformat:2 }}</td>
+                                    <td>{{ row.avg_margin|default:"—" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty-state">No completed buyer activity found in this range.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card summary-card">
+            <div class="card-body">
+                <div class="section-header-compact">
+                    <h2 class="section-title">Location Performance</h2>
+                </div>
+                <p class="section-subtitle">Completed purchase volume and average margin by location.</p>
+
+                {% if location_summary_rows %}
+                    <div class="table-wrap">
+                        <table class="summary-table">
+                            <tr>
+                                <th>Location</th>
+                                <th>Purchases</th>
+                                <th>Total</th>
+                                <th>Avg Margin</th>
+                            </tr>
+                            {% for row in location_summary_rows %}
+                                <tr>
+                                    <td class="cell-strong">{{ row.location }}</td>
+                                    <td>{{ row.purchase_count }}</td>
+                                    <td class="cell-money">${{ row.purchase_total|floatformat:2 }}</td>
+                                    <td>{{ row.avg_margin|default:"—" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="empty-state">No completed location activity found in this range.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="card table-card">
+        <div class="card-body">
+            <div class="section-header-compact">
+                <h2 class="section-title">Fix Required</h2>
+                <span class="section-count">{{ fix_required_count }} purchase{{ fix_required_count|pluralize }}</span>
+            </div>
+
+            {% if fix_required_purchases %}
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th class="col-isp"> ISP Number</th>
+                            <th>Buyer</th>
+                            <th>Location</th>
+                            <th>Seller</th>
+                            <th>Total</th>
+                            <th>Reconciliation</th>
+                            <th>Workflow</th>
+                            <th>Created</th>
+                        </tr>
+                        {% for purchase in fix_required_purchases %}
+                            <tr data-href="{% url 'purchase_detail' purchase.id %}" onclick="window.location.href=this.dataset.href;" style="cursor:pointer;">
+                                <td class="cell-strong cell-isp">{{ purchase.isp_number }}</td>
+                                <td>{{ purchase.buyer_initials }}</td>
+                                <td>{{ purchase.location }}</td>
+                                <td>{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
+                                <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if purchase.reconciliation_status == "under" %}
+                                        <span class="status-pill status-pill--warning">Under</span>
+                                    {% elif purchase.reconciliation_status == "over" %}
+                                        <span class="status-pill status-pill--danger">Over</span>
+                                    {% else %}
+                                        <span class="status-pill status-pill--neutral">{{ purchase.reconciliation_status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if purchase.workflow_status == "draft" %}
+                                        <span class="status-pill status-pill--draft">Draft</span>
+                                    {% elif purchase.workflow_status == "finalized" %}
+                                        <span class="status-pill status-pill--success">Completed</span>
+                                    {% else %}
+                                        <span class="status-pill status-pill--neutral">{{ purchase.workflow_status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ purchase.created_at|date:"M j, Y" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-state">No purchases currently require correction.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card table-card">
+        <div class="card-body">
+            <div class="section-header-compact">
+                <h2 class="section-title">In Progress</h2>
+                <span class="section-count">{{ in_progress_count }} purchase{{ in_progress_count|pluralize }}</span>
+            </div>
+
+            {% if in_progress_purchases %}
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th class="col-isp"> ISP Number</th>
+                            <th>Buyer</th>
+                            <th>Location</th>
+                            <th>Seller</th>
+                            <th>Total</th>
+                            <th>Reconciliation</th>
+                            <th>Workflow</th>
+                            <th>Created</th>
+                        </tr>
+                        {% for purchase in in_progress_purchases %}
+                            <tr data-href="{% url 'purchase_detail' purchase.id %}" onclick="window.location.href=this.dataset.href;" style="cursor:pointer;">
+                                <td class="cell-strong cell-isp">{{ purchase.isp_number }}</td>
+                                <td>{{ purchase.buyer_initials }}</td>
+                                <td>{{ purchase.location }}</td>
+                                <td>{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
+                                <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                <td><span class="status-pill status-pill--success">Balanced</span></td>
+                                <td><span class="status-pill status-pill--draft">Draft</span></td>
+                                <td>{{ purchase.created_at|date:"M j, Y" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-state">No in-progress purchases match the current filters.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card table-card">
+        <div class="card-body">
+            <div class="section-header-compact">
+                <h2 class="section-title">Completed</h2>
+                <span class="section-count">{{ completed_count }} purchase{{ completed_count|pluralize }}</span>
+            </div>
+
+            {% if completed_purchases %}
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th class="col-isp"> ISP Number</th>
+                            <th>Buyer</th>
+                            <th>Location</th>
+                            <th>Seller</th>
+                            <th>Total</th>
+                            <th>Reconciliation</th>
+                            <th>Workflow</th>
+                            <th>Finalized</th>
+                            <th>Export Status</th>
+                            <th>Exported At</th>
+                            <th>Export</th>
+                        </tr>
+                        {% for purchase in completed_purchases %}
+                            <tr data-href="{% url 'purchase_detail' purchase.id %}" onclick="window.location.href=this.dataset.href;" style="cursor:pointer;">
+                                <td class="cell-strong cell-isp">{{ purchase.isp_number }}</td>
+                                <td>{{ purchase.buyer_initials }}</td>
+                                <td>{{ purchase.location }}</td>
+                                <td>{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
+                                <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                <td><span class="status-pill status-pill--success">Balanced</span></td>
+                                <td><span class="status-pill status-pill--success">Completed</span></td>
+                                <td>{{ purchase.finalized_at|date:"M j, Y" }}</td>
+                                <td>{% if purchase.exported_at %}
+                                        <span class="status-pill status-pill--success">Exported</span>
+                                    {% else %}
+                                        <span class="status-pill status-pill--neutral">Not Exported</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>{% if purchase.exported_at %}
+                                        {{ purchase.exported_at|date:"M j, Y g:i A" }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td onclick="event.stopPropagation();">
+                                    <a href="{% url 'export_purchase_csv' purchase.id %}" class="button-secondary">CSV</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-state">No completed purchases match the current filters.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card table-card">
+        <div class="card-body">
+            <div class="section-header-compact">
+                <h2 class="section-title">All Matching Purchases</h2>
+                <span class="section-count">{{ total_purchases }} result{{ total_purchases|pluralize }}</span>
+            </div>
+
+            {% if all_purchases %}
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th class="col-isp"> ISP Number</th>
+                            <th>Buyer</th>
+                            <th>Location</th>
+                            <th>Seller</th>
+                            <th>Total</th>
+                            <th>Primary Payment</th>
+                            <th>Primary Amount</th>
+                            <th>Second Payment</th>
+                            <th>Second Amount</th>
+                            <th>Workflow</th>
+                            <th>Export</th>
+                        </tr>
+                        {% for purchase in all_purchases %}
+                            <tr data-href="{% url 'purchase_detail' purchase.id %}" onclick="window.location.href=this.dataset.href;" style="cursor:pointer;">
+                                <td class="cell-strong col-isp">{{ purchase.isp_number }}</td>
+                                <td>{{ purchase.buyer_initials }}</td>
+                                <td>{{ purchase.location }}</td>
+                                <td>{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
+                                <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                <td>{{ purchase.payment_method|default:"—"|title }}</td>
+                                <td>
+                                    {% if purchase.primary_payment_amount %}
+                                        ${{ purchase.primary_payment_amount|floatformat:2 }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>{{ purchase.second_payment_method|default:"—"|title }}</td>
+                                <td>
+                                    {% if purchase.second_payment_amount %}
+                                        ${{ purchase.second_payment_amount|floatformat:2 }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if purchase.workflow_status == "draft" %}
+                                        <span class="status-pill status-pill--draft">Draft</span>
+                                    {% elif purchase.workflow_status == "finalized" %}
+                                        <span class="status-pill status-pill--success">Completed</span>
+                                    {% else %}
+                                        <span class="status-pill status-pill--neutral">{{ purchase.workflow_status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if purchase.exported_at %}
+                                        <span class="status-pill status-pill--success">Exported</span>
+                                    {% else %}
+                                        <span class="status-pill status-pill--neutral">Not Exported</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-state">No purchases match the selected filters.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

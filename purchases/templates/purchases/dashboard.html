@@ -1,0 +1,788 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}My Purchases{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --brand-navy: #002D62;
+        --brand-berry: #D21848;
+
+        --page-bg: #f4f7fb;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --surface-soft-2: #fbfcfe;
+
+        --border: #e5ebf3;
+        --border-soft: #eef2f7;
+
+        --text-main: #142033;
+        --text-strong: #0f1728;
+        --text-soft: #667085;
+        --text-muted: #8b95a7;
+
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 4px 12px rgba(16, 24, 40, 0.05);
+        --shadow-md: 0 12px 28px rgba(16, 24, 40, 0.08);
+
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+
+        --success-bg: #ecfdf3;
+        --success-text: #027a48;
+
+        --warning-bg: #fff7e6;
+        --warning-text: #b54708;
+
+        --danger-bg: #fef3f2;
+        --danger-text: #b42318;
+
+        --draft-bg: #f2f4f7;
+        --draft-text: #475467;
+
+        --neutral-bg: #f8fafc;
+        --neutral-text: #475467;
+    }
+
+    body {
+        background: var(--page-bg) !important;
+        color: var(--text-main);
+    }
+
+    .dashboard-shell {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 28px;
+    }
+
+    .dashboard-hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 18px;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        padding: 28px 30px;
+    }
+
+    .dashboard-title {
+        margin: 0;
+        font-size: 2.25rem;
+        line-height: 1.02;
+        color: var(--text-strong);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .dashboard-subtitle {
+        margin: 10px 0 0;
+        color: var(--text-soft);
+        font-size: 1rem;
+        line-height: 1.5;
+        max-width: 760px;
+    }
+
+    .dashboard-kpis {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 26px;
+    }
+
+    .kpi-card {
+        background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 22px 22px 20px;
+        box-shadow: var(--shadow-xs);
+        min-height: 132px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+        border-color: #dbe4ef;
+    }
+
+    .kpi-label {
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: #7b8794;
+        margin-bottom: 12px;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .kpi-value {
+        font-size: 2.55rem;
+        line-height: 1;
+        font-weight: 800;
+        color: var(--brand-navy);
+        letter-spacing: -0.04em;
+        margin-bottom: 10px;
+    }
+
+    .kpi-meta {
+        font-size: 0.88rem;
+        color: #98a2b3;
+        line-height: 1.35;
+    }
+
+    .dashboard-toolbar {
+        margin-bottom: 32px;
+    }
+
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .filter-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        color: var(--text-main);
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: var(--shadow-xs);
+        transition: all 0.18s ease;
+    }
+
+    .filter-btn:hover {
+        background: #f8fbff;
+        border-color: #cfd7e3;
+        text-decoration: none;
+    }
+
+    .filter-btn.is-active {
+        background: var(--brand-navy);
+        color: #ffffff;
+        border-color: var(--brand-navy);
+    }
+
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        max-width: 720px;
+        margin: 0;
+    }
+
+    .search-box label {
+        display: none;
+    }
+
+    .search-box input {
+        flex: 1;
+        height: 52px;
+        padding: 0 18px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        color: var(--text-main);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        font-size: 0.97rem;
+        box-shadow: var(--shadow-xs);
+    }
+
+    .search-box input::placeholder {
+        color: #98a2b3;
+    }
+
+    .search-box input:focus {
+        border-color: rgba(0, 45, 98, 0.30);
+        box-shadow: 0 0 0 4px rgba(0, 45, 98, 0.08);
+        background: #fff;
+    }
+
+    .button,
+    .search-box button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 52px;
+        padding: 0 20px;
+        border-radius: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: all 0.18s ease;
+        cursor: pointer;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .button {
+        background: var(--brand-navy);
+        color: #fff !important;
+        box-shadow: var(--shadow-xs);
+        min-width: 188px;
+    }
+
+    .button:hover {
+        background: #083979;
+        color: #fff !important;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .search-box button {
+        background: #ffffff;
+        color: var(--text-main);
+        border-color: var(--border);
+        min-width: 110px;
+        box-shadow: var(--shadow-xs);
+    }
+
+    .search-box button:hover {
+        background: #fcfcfd;
+        border-color: #cfd7e3;
+    }
+
+    .dashboard-section {
+        margin-bottom: 32px;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        padding: 0 2px;
+    }
+
+    .section-title {
+        margin: 0;
+        font-size: 1.22rem;
+        font-weight: 800;
+        color: var(--text-strong);
+        letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+        margin: 6px 0 0;
+        color: var(--text-soft);
+        font-size: 0.94rem;
+        line-height: 1.4;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        overflow: hidden;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .table-wrap {
+        overflow-x: visible;
+        background: #ffffff;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #ffffff;
+        table-layout: auto;
+    }
+
+    th {
+        background: #fbfcfe;
+        color: #7b8794;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid #eef2f7;
+        line-height: 1.25;
+        vertical-align: middle;
+    }
+
+    td {
+        padding: 16px 16px;
+        border-bottom: 1px solid #eef2f7;
+        color: #243041;
+        font-size: 0.95rem;
+        vertical-align: middle;
+        font-weight: 500;
+        background: #ffffff;
+        line-height: 1.35;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr {
+        transition: background 0.18s ease;
+    }
+
+    tbody tr:hover td {
+        background: #f9fbff;
+    }
+
+    .col-isp {
+        width: 180px;
+    }
+
+    .col-first,
+    .col-last {
+        width: auto;
+    }
+
+    .col-total {
+        width: 110px;
+    }
+
+    .col-recon {
+        width: 150px;
+        text-align: center;
+    }
+
+    .col-workflow {
+        width: 120px;
+        text-align: center;
+    }
+
+    .col-date {
+        width: 120px;
+    }
+
+    .cell-strong {
+        font-weight: 800;
+        color: #002D62;
+    }
+
+    td.cell-money {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        font-weight: 600;
+        color: #1d2939;
+    }
+
+    td.cell-recon,
+    td.cell-workflow {
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    td.cell-date {
+        color: #667085;
+        font-size: 0.88rem;
+        white-space: nowrap;
+    }
+
+    td a {
+        color: #0b4ea2;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    td a:hover {
+        color: #D21848;
+    }
+
+    tbody tr td:first-child {
+        padding-left: 18px;
+    }
+
+    tbody tr td:last-child {
+        padding-right: 18px;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 28px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.02em;
+    }
+
+    .status-pill--draft {
+        background: #f2f4f7;
+        color: #475467;
+    }
+
+    .status-pill--success {
+        background: #ecfdf3;
+        color: #027a48;
+    }
+
+    .status-pill--warning {
+        background: #fff7e6;
+        color: #b54708;
+    }
+
+    .status-pill--danger {
+        background: #fef3f2;
+        color: #b42318;
+    }
+
+    .status-pill--neutral {
+        background: #f8fafc;
+        color: #475467;
+    }
+
+    .empty-state {
+        color: #667085;
+        padding: 18px 20px;
+        font-size: 0.95rem;
+    }
+
+    @media (max-width: 1200px) {
+        .dashboard-kpis {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 900px) {
+        .dashboard-shell {
+            padding: 20px;
+        }
+
+        .dashboard-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .dashboard-hero,
+        .search-box {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            max-width: 100%;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .button,
+        .search-box button,
+        .search-box input {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .dashboard-kpis {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-title {
+            font-size: 1.8rem;
+        }
+
+        th,
+        td {
+            padding: 14px;
+        }
+    }
+</style>
+
+<div class="dashboard-shell">
+
+    <section class="dashboard-hero">
+        <div>
+            <h1 class="dashboard-title">My Purchases</h1>
+            <p class="dashboard-subtitle">
+                Track drafts, finalized purchases, and items that need attention.
+            </p>
+
+        </div>
+            <div style="margin-bottom: 16px; font-weight: 600; color: #b42318;">
+            Initial release for workflow validation. Please provide feedback - major changes will be reviewed before implemenations.
+    </div>
+        <div>
+            <a class="button" href="{% url 'purchase_home' %}">Create New Purchase</a>
+        </div>
+    </section>
+
+    <section class="dashboard-kpis">
+        <div class="kpi-card">
+            <div class="kpi-label">Total Purchases</div>
+            <div class="kpi-value">{{ total_purchases|default:"—" }}</div>
+            <div class="kpi-meta">
+                {% if total_purchases %}All purchases in your account{% else %}No recent data{% endif %}
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">In Progress</div>
+            <div class="kpi-value">{{ draft_purchases_count|default:"—" }}</div>
+            <div class="kpi-meta">
+                {% if draft_purchases_count %}Still in progress{% else %}No recent data{% endif %}
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Completed</div>
+            <div class="kpi-value">{{ finalized_purchases_count|default:"—" }}</div>
+            <div class="kpi-meta">
+                {% if finalized_purchases_count %}Completed and locked{% else %}No recent data{% endif %}
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Fix Required</div>
+            <div class="kpi-value">{{ needs_attention_count|default:"—" }}</div>
+            <div class="kpi-meta">
+                {% if needs_attention_count %}Requires review or reconciliation{% else %}No recent data{% endif %}
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Margin % (30d)</div>
+            <div class="kpi-value">
+                {% if avg_margin_30d %}
+                    {{ avg_margin_30d }}
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+            <div class="kpi-meta">
+                {% if avg_margin_30d %}
+                    Weighted across finalized items
+                {% else %}
+                    No recent data
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-toolbar">
+        <form method="get" class="search-box">
+            <label for="q">Search by ISP Number, Seller First Name, or Seller Last Name</label>
+            <input type="text" name="q" id="q" value="{{ query }}" placeholder="Search by ISP Number or seller name">
+            <button type="submit">Search</button>
+        </form>
+    </section>
+
+    <div class="filter-bar">
+        <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}status=all"
+           class="filter-btn {% if status_filter == 'all' %}is-active{% endif %}">
+            All
+        </a>
+
+        <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}status=attention"
+           class="filter-btn {% if status_filter == 'attention' %}is-active{% endif %}">
+            Fix Required
+        </a>
+
+        <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}status=draft"
+           class="filter-btn {% if status_filter == 'draft' %}is-active{% endif %}">
+            In Progress
+        </a>
+
+        <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}status=finalized"
+           class="filter-btn {% if status_filter == 'finalized' %}is-active{% endif %}">
+            Completed
+        </a>
+    </div>
+
+    <section class="dashboard-section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Fix Required</h2>
+                <p class="section-subtitle">These draft purchases need correction and/or products added before they can be completed.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            {% if needs_attention_purchases %}
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th class="col-isp">ISP Number</th>
+                            <th class="col-first">First Name</th>
+                            <th class="col-last">Last Name</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-recon">Reconciliation</th>
+                            <th class="col-workflow">Workflow</th>
+                            <th class="col-date">Created</th>
+                        </tr>
+                        {% for purchase in needs_attention_purchases %}
+                        <tr data-href="{% url 'purchase_detail' purchase.id %}" onclick="window.location.href=this.dataset.href;" style="cursor:pointer;">
+                            <td class="col-isp cell-strong">
+                                {{ purchase.isp_number}}
+                            </td>
+                            <td class="col-first">{{ purchase.seller_first_name }}</td>
+                            <td class="col-last">{{ purchase.seller_last_name }}</td>
+                            <td class="col-total cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                            <td class="col-recon cell-recon">
+                                {% if purchase.reconciliation_status == "under" %}
+                                    <span class="status-pill status-pill--warning">Under</span>
+                                {% elif purchase.reconciliation_status == "balanced" %}
+                                    <span class="status-pill status-pill--success">Balanced</span>
+                                {% elif purchase.reconciliation_status == "over" %}
+                                    <span class="status-pill status-pill--danger">Over</span>
+                                {% else %}
+                                    <span class="status-pill status-pill--neutral">{{ purchase.reconciliation_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="col-workflow cell-workflow">
+                                {% if purchase.workflow_status == "draft" %}
+                                    <span class="status-pill status-pill--draft">Draft</span>
+                                {% elif purchase.workflow_status == "finalized" %}
+                                    <span class="status-pill status-pill--success">Completed</span>
+                                {% else %}
+                                    <span class="status-pill status-pill--neutral">{{ purchase.workflow_status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="col-date cell-date">{{ purchase.created_at|date:"M j, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-state">No purchases need attention. You're all caught up.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">In Progress</h2>
+                <p class="section-subtitle">Purchases are balanced but still being worked on.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            {% if draft_purchases %}
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th class="col-isp">ISP Number</th>
+                            <th class="col-first">First Name</th>
+                            <th class="col-last">Last Name</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-recon">Reconciliation</th>
+                            <th class="col-workflow">Workflow</th>
+                            <th class="col-date">Created</th>  
+                        </tr>
+                        
+                        {% for purchase in draft_purchases %}
+                        <tr data-href="{% url 'purchase_detail' purchase.id %}" onclick="window.location.href=this.dataset.href;" style="cursor:pointer;">
+                            <td class="col-isp cell-strong">
+                                {{ purchase.isp_number}}
+                            </td>
+                            <td class="col-first">{{ purchase.seller_first_name }}</td>
+                            <td class="col-last">{{ purchase.seller_last_name }}</td>
+                            <td class="col-total cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                            <td class="col-recon cell-recon">
+                                {% if purchase.reconciliation_status == "under" %}
+                                    <span class="status-pill status-pill--warning">Under</span>
+                                {% elif purchase.reconciliation_status == "balanced" %}
+                                    <span class="status-pill status-pill--success">Balanced</span>
+                                {% elif purchase.reconciliation_status == "over" %}
+                                    <span class="status-pill status-pill--danger">Over</span>
+                                {% else %}
+                                    <span class="status-pill status-pill--neutral">{{ purchase.reconciliation_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="col-workflow cell-workflow">
+                                <span class="status-pill status-pill--draft">Draft</span>
+                            </td>
+                            <td class="col-date cell-date">{{ purchase.created_at|date:"M j, Y" }}</td>
+                        
+
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-state">No draft purchases found.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Completed</h2>
+                <p class="section-subtitle">These purchases are finalized/locked and available for reference.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            {% if finalized_purchases %}
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th class="col-isp">ISP Number</th>
+                            <th class="col-first">First Name</th>
+                            <th class="col-last">Last Name</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-recon">Reconciliation</th>
+                            <th class="col-workflow">Workflow</th>
+                            <th class="col-date">Created</th>
+                        </tr>
+                        {% for purchase in finalized_purchases %}
+                        <tr data-href="{% url 'purchase_detail' purchase.id %}" onclick="window.location.href=this.dataset.href;" style="cursor:pointer;">
+                            <td class="col-isp cell-strong">
+                                {{ purchase.isp_number}}
+                            </td>
+                            <td class="col-first">{{ purchase.seller_first_name }}</td>
+                            <td class="col-last">{{ purchase.seller_last_name }}</td>
+                            <td class="col-total cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                            <td class="col-recon cell-recon">
+                                {% if purchase.reconciliation_status == "under" %}
+                                    <span class="status-pill status-pill--warning">Under</span>
+                                {% elif purchase.reconciliation_status == "balanced" %}
+                                    <span class="status-pill status-pill--success">Balanced</span>
+                                {% elif purchase.reconciliation_status == "over" %}
+                                    <span class="status-pill status-pill--danger">Over</span>
+                                {% else %}
+                                    <span class="status-pill status-pill--neutral">{{ purchase.reconciliation_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="col-workflow cell-workflow">
+                                <span class="status-pill status-pill--success">Finalized</span>
+                            </td>
+                            <td class="col-date cell-date">{{ purchase.created_at|date:"M j, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty-state">No finalized purchases found.</p>
+            {% endif %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}
