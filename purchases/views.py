@@ -4,10 +4,10 @@ import csv
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.db.models import Q, Avg
 
 from .forms import PurchaseForm, PurchaseItemsForm, PurchaseItemFormSet, BulkCardForm
 from .models import Purchase, PurchaseItem
@@ -50,22 +50,29 @@ def get_next_item_sequence(purchase):
 
 
 def recalculate_purchase_totals(purchase):
+    purchase = Purchase.objects.prefetch_related("items").get(id=purchase.id)
     items = purchase.items.all()
 
-    allocated_total = sum(item.line_total_cost for item in items)
-    difference = purchase.purchase_total_amount - allocated_total
+    allocated_total = sum(
+        (item.line_total_cost or Decimal("0.00")) for item in items
+    )
+    difference = (purchase.purchase_total_amount or Decimal("0.00")) - allocated_total
 
     purchase.allocation_total_amount = allocated_total
     purchase.allocation_difference = difference
 
-    if difference == 0:
+    if difference == Decimal("0.00"):
         purchase.reconciliation_status = "balanced"
-    elif difference > 0:
+    elif difference > Decimal("0.00"):
         purchase.reconciliation_status = "under"
     else:
         purchase.reconciliation_status = "over"
 
-    purchase.save()
+    purchase.save(update_fields=[
+        "allocation_total_amount",
+        "allocation_difference",
+        "reconciliation_status",
+    ])
 
 
 def get_user_profile_flags(user):
@@ -142,8 +149,11 @@ def purchase_detail(request, purchase_id):
 
     access = get_user_profile_flags(request.user)
 
-    total_cost = sum(item.line_total_cost or 0 for item in purchase.items.all())
-    total_retail = sum((item.quantity or 0) * (item.retail_price or 0) for item in purchase.items.all())
+    total_cost = sum((item.line_total_cost or Decimal("0.00")) for item in purchase.items.all())
+    total_retail = sum(
+        (item.quantity or 0) * (item.retail_price or Decimal("0.00"))
+        for item in purchase.items.all()
+    )
     total_profit = total_retail - total_cost
     margin_percent = ((total_profit / total_retail) * 100) if total_retail > 0 else None
 
@@ -189,6 +199,7 @@ def add_purchase_item(request, purchase_id):
             item.line_total_cost = item.quantity * item.unit_cost
             item.save()
 
+            purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
             messages.success(request, "Product added successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
@@ -244,6 +255,7 @@ def add_bulk_cards(request, purchase_id):
                 line_total_cost=total_cost,
             )
 
+            purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
             messages.success(request, "Bulk cards added successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
@@ -301,6 +313,7 @@ def add_purchase_items_bulk(request, purchase_id):
                 item.line_total_cost = item.quantity * item.unit_cost
                 item.save()
 
+            purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
             messages.success(request, "Products saved successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
@@ -308,8 +321,11 @@ def add_purchase_items_bulk(request, purchase_id):
         formset = PurchaseItemFormSet(queryset=queryset)
 
     items = purchase.items.all()
-    total_retail = sum((item.quantity or 0) * (item.retail_price or 0) for item in items)
-    total_cost = sum(item.line_total_cost or 0 for item in items)
+    total_retail = sum(
+        (item.quantity or 0) * (item.retail_price or Decimal("0.00"))
+        for item in items
+    )
+    total_cost = sum((item.line_total_cost or Decimal("0.00")) for item in items)
     total_profit = total_retail - total_cost
     avg_margin = ((total_profit / total_retail) * 100) if total_retail > 0 else None
 
@@ -375,6 +391,7 @@ def delete_purchase_item(request, purchase_id, item_id):
 
     if request.method == "POST":
         item.delete()
+        purchase.refresh_from_db()
         recalculate_purchase_totals(purchase)
 
     return redirect("purchase_detail", purchase_id=purchase.id)
@@ -409,6 +426,7 @@ def edit_purchase_item(request, purchase_id, item_id):
             item.line_total_cost = item.quantity * item.unit_cost
             item.save()
 
+            purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
             messages.success(request, "Product updated successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
@@ -485,6 +503,7 @@ def edit_purchase_header(request, purchase_id):
             purchase.buyer_initials = access["buyer_code"]
             purchase.save()
 
+            purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
             messages.success(request, "Purchase details updated successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
@@ -552,16 +571,16 @@ def buyer_dashboard(request):
         finalized_at__gte=cutoff
     )
 
-    total_revenue_30d = 0
-    total_cost_30d = 0
+    total_revenue_30d = Decimal("0.00")
+    total_cost_30d = Decimal("0.00")
 
     for purchase in finalized_last_30:
         for item in purchase.items.all():
             qty = item.quantity or 0
-            retail = item.retail_price or 0
-            line_cost = item.line_total_cost or 0
+            retail = item.retail_price or Decimal("0.00")
+            line_cost = item.line_total_cost or Decimal("0.00")
 
-            total_revenue_30d += qty * retail
+            total_revenue_30d += Decimal(qty) * retail
             total_cost_30d += line_cost
 
     avg_margin_30d = None
@@ -602,6 +621,7 @@ def buyer_dashboard(request):
         "access": access,
     })
 
+
 @login_required
 def post_login_redirect(request):
     access = get_user_profile_flags(request.user)
@@ -610,6 +630,7 @@ def post_login_redirect(request):
         return redirect("admin_dashboard")
 
     return redirect("buyer_dashboard")
+
 
 @login_required
 def admin_dashboard(request):
@@ -661,6 +682,7 @@ def admin_dashboard(request):
         purchases = purchases.filter(
             Q(payment_method=payment_filter) | Q(second_payment_method=payment_filter)
         )
+
     if export_status == "exported":
         purchases = purchases.filter(exported_at__isnull=False)
     elif export_status == "not_exported":
@@ -695,18 +717,18 @@ def admin_dashboard(request):
     completed_count = completed_purchases.count()
 
     total_purchase_amount = sum(
-        purchase.purchase_total_amount or 0 for purchase in all_purchases
+        (purchase.purchase_total_amount or Decimal("0.00")) for purchase in all_purchases
     )
 
-    total_revenue = 0
-    total_cost = 0
+    total_revenue = Decimal("0.00")
+    total_cost = Decimal("0.00")
 
     for purchase in completed_purchases:
         for item in purchase.items.all():
             qty = item.quantity or 0
-            retail = item.retail_price or 0
-            line_cost = item.line_total_cost or 0
-            total_revenue += qty * retail
+            retail = item.retail_price or Decimal("0.00")
+            line_cost = item.line_total_cost or Decimal("0.00")
+            total_revenue += Decimal(qty) * retail
             total_cost += line_cost
 
     avg_margin = None
@@ -731,8 +753,8 @@ def admin_dashboard(request):
 
         for item in purchase.items.all():
             qty = item.quantity or 0
-            retail = item.retail_price or 0
-            line_cost = item.line_total_cost or 0
+            retail = item.retail_price or Decimal("0.00")
+            line_cost = item.line_total_cost or Decimal("0.00")
             buyer_summary[buyer_code]["revenue"] += Decimal(qty) * retail
             buyer_summary[buyer_code]["cost"] += line_cost
 
@@ -771,8 +793,8 @@ def admin_dashboard(request):
 
         for item in purchase.items.all():
             qty = item.quantity or 0
-            retail = item.retail_price or 0
-            line_cost = item.line_total_cost or 0
+            retail = item.retail_price or Decimal("0.00")
+            line_cost = item.line_total_cost or Decimal("0.00")
             location_summary[location]["revenue"] += Decimal(qty) * retail
             location_summary[location]["cost"] += line_cost
 
@@ -860,6 +882,7 @@ def export_purchase_csv(request, purchase_id):
 
     return response
 
+
 @login_required
 def export_filtered_finalized_csv(request):
     access = get_user_profile_flags(request.user)
@@ -895,6 +918,7 @@ def export_filtered_finalized_csv(request):
         purchases = purchases.filter(
             Q(payment_method=payment_filter) | Q(second_payment_method=payment_filter)
         )
+
     if export_status == "exported":
         purchases = purchases.filter(exported_at__isnull=False)
     elif export_status == "not_exported":
