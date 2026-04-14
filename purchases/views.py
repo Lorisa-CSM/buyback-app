@@ -354,6 +354,16 @@ def add_purchase_items_bulk(request, purchase_id):
 
             saved_descriptions = []
             for item in items:
+                is_blank_row = (
+                not str(item.title or "").strip()
+                and not item.quantity
+                and not item.unit_cost
+                and not item.retail_price
+                )
+
+                if is_blank_row:
+                    continue
+
                 item.purchase = purchase
 
                 if not item.pk:

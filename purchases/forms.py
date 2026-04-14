@@ -198,8 +198,9 @@ class PurchaseItemsForm(forms.ModelForm):
 PurchaseItemFormSet = forms.modelformset_factory(
     PurchaseItem,
     form=PurchaseItemsForm,
-    extra=5,
-    can_delete=True
+    extra=1,
+    can_delete=True,
+    fields=["title", "quantity", "unit_cost", "retail_price"],
 )
 
 
