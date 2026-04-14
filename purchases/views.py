@@ -105,6 +105,25 @@ def can_reopen_purchase(access):
     return bool(access["can_reopen_purchases"])
 
 
+def log_purchase_edit(
+    purchase,
+    user,
+    action,
+    field_name="",
+    old_value="",
+    new_value="",
+    note="",
+):
+    purchase.edit_logs.create(
+        edited_by=user,
+        action=action,
+        field_name=field_name,
+        old_value=str(old_value or ""),
+        new_value=str(new_value or ""),
+        note=note or "",
+    )
+
+
 @login_required
 def purchase_home(request):
     access = get_user_profile_flags(request.user)
@@ -131,6 +150,13 @@ def purchase_home(request):
             purchase.reconciliation_status = "under"
             purchase.workflow_status = "draft"
             purchase.save()
+
+            log_purchase_edit(
+                purchase=purchase,
+                user=request.user,
+                action="purchase_created",
+                note="Purchase created.",
+            )
 
             messages.success(request, "Purchase saved successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
@@ -165,6 +191,7 @@ def purchase_detail(request, purchase_id):
         "margin_percent": margin_percent,
         "buyer": access["profile"],
         "access": access,
+        "edit_logs": purchase.edit_logs.all()[:25],
     })
 
 
@@ -201,6 +228,15 @@ def add_purchase_item(request, purchase_id):
 
             purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
+
+            log_purchase_edit(
+                purchase=purchase,
+                user=request.user,
+                action="item_added",
+                field_name="item",
+                new_value=f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}",
+            )
+
             messages.success(request, "Product added successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
     else:
@@ -245,7 +281,7 @@ def add_bulk_cards(request, purchase_id):
 
             next_seq = get_next_item_sequence(purchase)
 
-            PurchaseItem.objects.create(
+            item = PurchaseItem.objects.create(
                 purchase=purchase,
                 sku=f"{purchase.isp_number}-{next_seq:02d}",
                 title="Bulk Cards",
@@ -257,6 +293,15 @@ def add_bulk_cards(request, purchase_id):
 
             purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
+
+            log_purchase_edit(
+                purchase=purchase,
+                user=request.user,
+                action="bulk_cards_added",
+                field_name="item",
+                new_value=f"{item.sku} | Bulk Cards | qty=1 | cost={total_cost}",
+            )
+
             messages.success(request, "Bulk cards added successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
     else:
@@ -300,9 +345,14 @@ def add_purchase_items_bulk(request, purchase_id):
             next_seq = get_next_item_sequence(purchase)
             items = formset.save(commit=False)
 
+            deleted_descriptions = []
             for obj in formset.deleted_objects:
+                deleted_descriptions.append(
+                    f"{obj.sku} | {obj.title} | qty={obj.quantity} | cost={obj.unit_cost}"
+                )
                 obj.delete()
 
+            saved_descriptions = []
             for item in items:
                 item.purchase = purchase
 
@@ -312,9 +362,31 @@ def add_purchase_items_bulk(request, purchase_id):
 
                 item.line_total_cost = item.quantity * item.unit_cost
                 item.save()
+                saved_descriptions.append(
+                    f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}"
+                )
 
             purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
+
+            if saved_descriptions:
+                log_purchase_edit(
+                    purchase=purchase,
+                    user=request.user,
+                    action="bulk_items_saved",
+                    note="Bulk item save completed.",
+                    new_value=" || ".join(saved_descriptions),
+                )
+
+            for deleted_item in deleted_descriptions:
+                log_purchase_edit(
+                    purchase=purchase,
+                    user=request.user,
+                    action="item_deleted",
+                    field_name="item",
+                    old_value=deleted_item,
+                )
+
             messages.success(request, "Products saved successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
     else:
@@ -365,6 +437,13 @@ def finalize_purchase(request, purchase_id):
         purchase.finalized_at = timezone.now()
         purchase.save()
 
+        log_purchase_edit(
+            purchase=purchase,
+            user=request.user,
+            action="purchase_finalized",
+            note="Purchase finalized.",
+        )
+
     return redirect("purchase_detail", purchase_id=purchase.id)
 
 
@@ -390,9 +469,18 @@ def delete_purchase_item(request, purchase_id, item_id):
         return redirect("purchase_detail", purchase_id=purchase.id)
 
     if request.method == "POST":
+        deleted_item = f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}"
         item.delete()
         purchase.refresh_from_db()
         recalculate_purchase_totals(purchase)
+
+        log_purchase_edit(
+            purchase=purchase,
+            user=request.user,
+            action="item_deleted",
+            field_name="item",
+            old_value=deleted_item,
+        )
 
     return redirect("purchase_detail", purchase_id=purchase.id)
 
@@ -419,6 +507,13 @@ def edit_purchase_item(request, purchase_id, item_id):
         return redirect("purchase_detail", purchase_id=purchase.id)
 
     if request.method == "POST":
+        original_item = {
+            "sku": item.sku,
+            "title": item.title,
+            "quantity": item.quantity,
+            "unit_cost": item.unit_cost,
+        }
+
         form = PurchaseItemsForm(request.POST, instance=item)
         if form.is_valid():
             item = form.save(commit=False)
@@ -428,6 +523,22 @@ def edit_purchase_item(request, purchase_id, item_id):
 
             purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
+
+            old_item = (
+                f"{original_item['sku']} | {original_item['title']} | "
+                f"qty={original_item['quantity']} | cost={original_item['unit_cost']}"
+            )
+            new_item = f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}"
+
+            log_purchase_edit(
+                purchase=purchase,
+                user=request.user,
+                action="item_updated",
+                field_name="item",
+                old_value=old_item,
+                new_value=new_item,
+            )
+
             messages.success(request, "Product updated successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
     else:
@@ -496,6 +607,15 @@ def edit_purchase_header(request, purchase_id):
         return redirect("purchase_detail", purchase_id=purchase.id)
 
     if request.method == "POST":
+        original_purchase = {
+            "seller_first_name": purchase.seller_first_name,
+            "seller_last_name": purchase.seller_last_name,
+            "purchase_total_amount": purchase.purchase_total_amount,
+            "location": purchase.location,
+            "payment_method": getattr(purchase, "payment_method", ""),
+            "second_payment_method": getattr(purchase, "second_payment_method", ""),
+        }
+
         form = PurchaseForm(request.POST, instance=purchase, user=request.user)
 
         if form.is_valid():
@@ -505,6 +625,22 @@ def edit_purchase_header(request, purchase_id):
 
             purchase.refresh_from_db()
             recalculate_purchase_totals(purchase)
+
+            log_purchase_edit(
+                purchase=purchase,
+                user=request.user,
+                action="purchase_header_updated",
+                old_value=str(original_purchase),
+                new_value=(
+                    f"seller_first_name={purchase.seller_first_name}, "
+                    f"seller_last_name={purchase.seller_last_name}, "
+                    f"purchase_total_amount={purchase.purchase_total_amount}, "
+                    f"location={purchase.location}, "
+                    f"payment_method={getattr(purchase, 'payment_method', '')}, "
+                    f"second_payment_method={getattr(purchase, 'second_payment_method', '')}"
+                ),
+            )
+
             messages.success(request, "Purchase details updated successfully.")
             return redirect("purchase_detail", purchase_id=purchase.id)
     else:
@@ -880,6 +1016,13 @@ def export_purchase_csv(request, purchase_id):
     purchase.export_count += 1
     purchase.save()
 
+    log_purchase_edit(
+        purchase=purchase,
+        user=request.user,
+        action="purchase_exported",
+        note=f"Single purchase CSV exported. Export count is now {purchase.export_count}.",
+    )
+
     return response
 
 
@@ -981,10 +1124,19 @@ def export_filtered_finalized_csv(request):
         exported_purchase_ids.append(purchase.id)
 
     if exported_purchase_ids:
+        timestamp = timezone.now()
         Purchase.objects.filter(id__in=exported_purchase_ids).update(
-            exported_at=timezone.now(),
+            exported_at=timestamp,
             exported_by=request.user,
         )
+
+        for purchase in purchases:
+            log_purchase_edit(
+                purchase=purchase,
+                user=request.user,
+                action="purchase_exported",
+                note="Included in filtered finalized CSV export.",
+            )
 
     return response
 
@@ -1011,6 +1163,13 @@ def reopen_purchase(request, purchase_id):
         purchase.reopened_by = request.user
         purchase.reopen_reason = reopen_reason
         purchase.save()
+
+        log_purchase_edit(
+            purchase=purchase,
+            user=request.user,
+            action="purchase_reopened",
+            note=reopen_reason,
+        )
 
     return redirect("purchase_detail", purchase_id=purchase.id)
 
