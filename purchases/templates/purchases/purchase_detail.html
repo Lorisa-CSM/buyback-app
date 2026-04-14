@@ -560,7 +560,7 @@
 </style>
 
 <div class="detail-shell">
-
+{% load tz %}
     <section class="detail-hero">
         <div>
             <h1 class="detail-title">Purchase Detail</h1>
@@ -676,14 +676,14 @@
                     {% if purchase.finalized_at %}
                     <div class="summary-item">
                         <div class="summary-label">Finalized At</div>
-                        <div class="summary-value">{{ purchase.finalized_at|date:"M j, Y g:i A" }}</div>
+                        <div class="summary-value">{{ purchase.finalized_at|localtime|date:"M j, Y g:i A" }}</div>
                     </div>
                     {% endif %}
 
                     {% if purchase.exported_at %}
                     <div class="summary-item">
                         <div class="summary-label">Exported At</div>
-                        <div class="summary-value">{{ purchase.exported_at|date:"M j, Y g:i A" }}</div>
+                        <div class="summary-value">{{ purchase.exported_at|localtime|date:"M j, Y g:i A" }}</div>
                     </div>
 
                     <div class="summary-item">
@@ -827,5 +827,56 @@
         </div>
     </section>
 
+
+<div class="card" style="margin-top: 24px;">
+    <div class="card-body">
+        <h2 class="section-title" style="font-size: 24px; margin-bottom: 8px;">Edit History</h2>
+        <p class="muted" style="margin-top: 0; margin-bottom: 18px;">
+            Most recent changes made to this purchase.
+        </p>
+
+        {% if edit_logs %}
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>When</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Field</th>
+                            <th>Old Value</th>
+                            <th>New Value</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in edit_logs %}
+                            <tr>
+                                <td>{{ log.created_at|localtime|date:"M j, Y g:i A" }}</td>
+                                <td>
+                                    {% if log.edited_by %}
+                                        {{ log.edited_by.username }}
+                                    {% else %}
+                                        System
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.action }}</td>
+                                <td>{{ log.field_name|default:"-" }}</td>
+                                <td>{{ log.old_value|default:"-" }}</td>
+                                <td>{{ log.new_value|default:"-" }}</td>
+                                <td>{{ log.note|default:"-" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="empty-state">No edit history yet.</p>
+        {% endif %}
+    </div>
 </div>
+
+
+</div>
+
 {% endblock %}

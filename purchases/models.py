@@ -2,8 +2,39 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
+from django.db import models
+
+from django.conf import settings
+from django.db import models
 
 
+class PurchaseEditLog(models.Model):
+    purchase = models.ForeignKey(
+        "Purchase",
+        on_delete=models.CASCADE,
+        related_name="edit_logs",
+    )
+    edited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    action = models.CharField(max_length=50)
+    field_name = models.CharField(max_length=100, blank=True)
+    old_value = models.TextField(blank=True)
+    new_value = models.TextField(blank=True)
+    note = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        purchase_number = getattr(self.purchase, "isp_number", "Unknown Purchase")
+        return f"{purchase_number} - {self.action} - {self.created_at: %Y-%m-%d %H:%M}"
+    
 class BuyerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     buyer_code = models.CharField(max_length=10, unique=True)

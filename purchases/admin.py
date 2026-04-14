@@ -1,10 +1,16 @@
 from django.contrib import admin
-from .models import Purchase, PurchaseItem, BuyerProfile
+from .models import Purchase, PurchaseItem, BuyerProfile, PurchaseEditLog
 import csv
 from django.http import HttpResponse
-from django.contrib import messages
+from django.contrib import messages, admin
 from django.urls import reverse
 from django.utils.html import format_html
+
+@admin.register(PurchaseEditLog)
+class PurchaseEditLogAdmin(admin.ModelAdmin):
+    list_display = ("purchase", "action", "edited_by", "created_at")
+    list_filter = ("action", "created_at")
+    search_fields = ("purchase__isp_number", "edited_by__username", "note", "old_value", "new_value")
 
 @admin.register(BuyerProfile)
 class BuyerProfileAdmin(admin.ModelAdmin):

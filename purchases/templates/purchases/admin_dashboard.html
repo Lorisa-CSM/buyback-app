@@ -776,7 +776,7 @@
                                 <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
                                 <td><span class="status-pill status-pill--success">Balanced</span></td>
                                 <td><span class="status-pill status-pill--draft">Draft</span></td>
-                                <td>{{ purchase.created_at|date:"M j, Y" }}</td>
+                                <td>{{ purchase.created_at|date:"M j, Y " }}</td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -828,7 +828,7 @@
                                 </td>
 
                                 <td>{% if purchase.exported_at %}
-                                        {{ purchase.exported_at|date:"M j, Y g:i A" }}
+                                        {{ purchase.exported_at|date:"M j, Y " }}
                                     {% else %}
                                         —
                                     {% endif %}

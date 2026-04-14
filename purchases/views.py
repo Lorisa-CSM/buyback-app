@@ -1174,6 +1174,8 @@ def reopen_purchase(request, purchase_id):
     return redirect("purchase_detail", purchase_id=purchase.id)
 
 
+
+
 @login_required
 def download_purchase_order(request, purchase_id):
     access = get_user_profile_flags(request.user)
