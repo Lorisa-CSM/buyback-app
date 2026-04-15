@@ -169,7 +169,7 @@ def purchase_home(request):
 @login_required
 def purchase_detail(request, purchase_id):
     purchase = get_object_or_404(
-        Purchase.objects.prefetch_related("items"),
+        Purchase.objects.prefetch_related("items", "edit_logs__edited_by__buyerprofile"),
         id=purchase_id
     )
 
@@ -183,6 +183,42 @@ def purchase_detail(request, purchase_id):
     total_profit = total_retail - total_cost
     margin_percent = ((total_profit / total_retail) * 100) if total_retail > 0 else None
 
+    edit_logs = purchase.edit_logs.all()[:25]
+
+    for log in edit_logs:
+        if log.action == "purchase_created":
+            log.description = "Created purchase"
+
+        elif log.action == "item_added":
+            log.description = f"Added product {log.new_value}"
+
+        elif log.action == "bulk_cards_added":
+            log.description = f"Added bulk cards: {log.new_value}"
+
+        elif log.action == "bulk_items_saved":
+            log.description = "Saved bulk product changes"
+
+        elif log.action == "item_deleted":
+            log.description = f"Deleted product {log.old_value}"
+
+        elif log.action == "item_updated":
+            log.description = f"Updated product from {log.old_value} to {log.new_value}"
+
+        elif log.action == "purchase_header_updated":
+            log.description = "Updated purchase details"
+
+        elif log.action == "purchase_finalized":
+            log.description = "Finalized purchase"
+
+        elif log.action == "purchase_reopened":
+            log.description = f"Reopened purchase: {log.note}" if log.note else "Reopened purchase"
+
+        elif log.action == "purchase_exported":
+            log.description = "Exported purchase to CSV"
+
+        else:
+            log.description = log.note or log.action.replace("_", " ").title()
+
     return render(request, "purchases/purchase_detail.html", {
         "purchase": purchase,
         "total_cost": total_cost,
@@ -191,7 +227,7 @@ def purchase_detail(request, purchase_id):
         "margin_percent": margin_percent,
         "buyer": access["profile"],
         "access": access,
-        "edit_logs": purchase.edit_logs.all()[:25],
+        "edit_logs": edit_logs,
     })
 
 
@@ -234,7 +270,7 @@ def add_purchase_item(request, purchase_id):
                 user=request.user,
                 action="item_added",
                 field_name="item",
-                new_value=f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}",
+                new_value=f"{item.title} | qty={item.quantity} | cost={item.unit_cost}, retail ${item.retail.price}",
             )
 
             messages.success(request, "Product added successfully.")
@@ -299,7 +335,7 @@ def add_bulk_cards(request, purchase_id):
                 user=request.user,
                 action="bulk_cards_added",
                 field_name="item",
-                new_value=f"{item.sku} | Bulk Cards | qty=1 | cost={total_cost}",
+                new_value=f"Bulk Cards, qty=1, cost={total_cost}, retail ${retail_price}",
             )
 
             messages.success(request, "Bulk cards added successfully.")
@@ -479,7 +515,7 @@ def delete_purchase_item(request, purchase_id, item_id):
         return redirect("purchase_detail", purchase_id=purchase.id)
 
     if request.method == "POST":
-        deleted_item = f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}"
+        deleted_item = f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail_price}",
         item.delete()
         purchase.refresh_from_db()
         recalculate_purchase_totals(purchase)
@@ -535,11 +571,14 @@ def edit_purchase_item(request, purchase_id, item_id):
             recalculate_purchase_totals(purchase)
 
             old_item = (
-                f"{original_item['sku']} | {original_item['title']} | "
-                f"qty={original_item['quantity']} | cost={original_item['unit_cost']}"
+                f"{original_item['title']}, {original_item['quantity']},"
+                f"cost={original_item['unit_cost']}"
             )
-            new_item = f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}"
-
+            new_item = (
+                f"{item.title}, qty={item.quantity}, "
+                f"cost={item.unit_cost}, retail ${item.retail_price}"
+            )
+            
             log_purchase_edit(
                 purchase=purchase,
                 user=request.user,
