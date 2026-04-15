@@ -1233,3 +1233,112 @@ def download_purchase_order(request, purchase_id):
         "buyer": access["profile"],
         "access": access,
     })
+
+@login_required
+def export_accounting_report_csv(request):
+    access = get_user_profile_flags(request.user)
+
+    if not can_view_reports(access):
+        messages.error(request, "You do not have permission to export accounting reports.")
+        return redirect("buyer_dashboard")
+
+    today = timezone.localdate()
+    default_start = today - timedelta(days=30)
+
+    date_from = request.GET.get("date_from") or default_start.isoformat()
+    date_to = request.GET.get("date_to") or today.isoformat()
+    payment_filter = request.GET.get("payment_method", "").strip().lower()
+
+    purchases = Purchase.objects.filter(
+        workflow_status="finalized",
+        finalized_at__date__gte=date_from,
+        finalized_at__date__lte=date_to,
+    ).order_by("-finalized_at")
+
+    if payment_filter:
+        purchases = purchases.filter(
+            Q(payment_method__iexact=payment_filter) |
+            Q(second_payment_method__iexact=payment_filter)
+        )
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="accounting_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "Date/Time Finalized",
+        "ISP #",
+        "Location",
+        "Seller First Name",
+        "Seller Last Name",
+        "Order Total",
+        "Paid via Cash",
+        "Paid via Check",
+        "Check #",
+        "Paid via Gift Card",
+        "Gift Card #",
+        "Paid via Other",
+        "Other Explained",
+    ])
+
+    for purchase in purchases:
+        cash_amount = Decimal("0.00")
+        check_amount = Decimal("0.00")
+        check_number = ""
+        gift_card_amount = Decimal("0.00")
+        gift_card_number = ""
+        other_amount = Decimal("0.00")
+        other_explained = ""
+
+        payment_1 = (purchase.payment_method or "").strip().lower()
+        amount_1 = purchase.primary_payment_amount or Decimal("0.00")
+
+        payment_2 = (purchase.second_payment_method or "").strip().lower()
+        amount_2 = purchase.second_payment_amount or Decimal("0.00")
+
+        if payment_1 == "cash":
+            cash_amount += amount_1
+        elif payment_1 == "check":
+            check_amount += amount_1
+            check_number = purchase.check_number or ""
+        elif payment_1 == "gift_card":
+            gift_card_amount += amount_1
+            gift_card_number = purchase.gift_card_last4 or ""
+        elif payment_1:
+            other_amount += amount_1
+            other_explained = purchase.payment_other_reason or payment_1
+
+        if payment_2 == "cash":
+            cash_amount += amount_2
+        elif payment_2 == "check":
+            check_amount += amount_2
+            if not check_number:
+                check_number = purchase.second_check_number or ""
+        elif payment_2 == "gift_card":
+            gift_card_amount += amount_2
+            if not gift_card_number:
+                gift_card_number = purchase.second_gift_card_last4 or ""
+        elif payment_2:
+            other_amount += amount_2
+            if other_explained:
+                other_explained = f"{other_explained}; {purchase.second_payment_other_reason or payment_2}"
+            else:
+                other_explained = purchase.second_payment_other_reason or payment_2
+
+        writer.writerow([
+            timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %I:%M %p") if purchase.finalized_at else "",
+            purchase.isp_number,
+            purchase.location,
+            purchase.seller_first_name,
+            purchase.seller_last_name,
+            purchase.purchase_total_amount or Decimal("0.00"),
+            cash_amount,
+            check_amount,
+            check_number,
+            gift_card_amount,
+            gift_card_number,
+            other_amount,
+            other_explained,
+        ])
+
+    return response

@@ -19,7 +19,7 @@ from .views import (
     download_purchase_order,
     admin_dashboard,
     post_login_redirect,
-    
+    export_accounting_report_csv,    
 )
 
 urlpatterns = [
@@ -44,4 +44,5 @@ urlpatterns = [
     path("exports/finalized-csv/", export_filtered_finalized_csv, name="export_filtered_finalized_csv"),
     path("purchase/<int:purchase_id>/reopen/", reopen_purchase, name="reopen_purchase"),
     path("purchase/<int:purchase_id>/download-order/", download_purchase_order, name="download_purchase_order"),
+    path("reports/accounting-export/", export_accounting_report_csv, name="export_accounting_report_csv"),
 ]
