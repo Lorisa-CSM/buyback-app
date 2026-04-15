@@ -418,13 +418,23 @@
         white-space: nowrap;
     }
 
+    .search-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
     @media (max-width: 1200px) {
         .kpi-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         .filter-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            display: grid;
+            grid-template-columns: repeat(4, minmax(140px, 1fr));
+            gap: 12px;
+            align-items: end;
         }
 
         .search-row {
@@ -455,7 +465,7 @@
         }
 
         .filter-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
         }
 
         .search-row {
@@ -619,6 +629,10 @@
                         class="button-secondary"
                     >
                         Export Finalized CSV
+                    </a>
+                    <a href="{% url 'export_accounting_report_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}&payment_method={{ payment_filter }}"
+                    class="button">
+                        Export Accounting CSV
                     </a>
                 </div>
             </form>
