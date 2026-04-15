@@ -827,6 +827,8 @@
         </div>
     </section>
 
+
+##Edit Hx##
 <div class="card" style="margin-top: 24px;">
     <div class="card-body">
         <h2 class="section-title" style="font-size: 24px; margin-bottom: 8px;">Edit History</h2>
@@ -836,19 +838,22 @@
 
         {% if edit_logs %}
             <div style="overflow-x: auto;">
-                <table>
+                <table style="width: 100%; table-layout: fixed;">
                     <thead>
                         <tr>
-                            <th>Date/Time</th>
-                            <th>Buyer</th>
+                            <th style="width: 140px;"> Date/Time</th>
+                            <th style="width: 70px;">Buyer</th>
                             <th>Change Summary</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for log in edit_logs %}
                             <tr>
-                                <td>{{ log.created_at|localtime|date:"M j, Y g:i A" }}</td>
-                                <td>
+                                <td style="white-space: nowrap;">
+                                    {{ log.created_at|localtime|date:"M j, g:i A" }}
+                                </td>
+
+                                <td style="text-align: center; font-weight: 600;">
                                     {% if log.edited_by and log.edited_by.buyerprofile %}
                                         {{ log.edited_by.buyerprofile.buyer_code }}
                                     {% elif log.edited_by %}
@@ -857,7 +862,10 @@
                                         System
                                     {% endif %}
                                 </td>
-                                <td>{{ log.description }}</td>
+
+                                <td style="white-space: normal; word-break: break-word;">
+                                    {{ log.description }}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
