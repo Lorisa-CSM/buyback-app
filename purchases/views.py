@@ -169,8 +169,8 @@ def purchase_home(request):
 @login_required
 def purchase_detail(request, purchase_id):
     purchase = get_object_or_404(
-        Purchase.objects.prefetch_related("items", "edit_logs__edited_by__buyerprofile"),
-        id=purchase_id
+     Purchase.objects.prefetch_related("items", "edit_logs__edited_by__buyerprofile"),
+         id=purchase_id
     )
 
     access = get_user_profile_flags(request.user)
@@ -188,34 +188,24 @@ def purchase_detail(request, purchase_id):
     for log in edit_logs:
         if log.action == "purchase_created":
             log.description = "Created purchase"
-
         elif log.action == "item_added":
             log.description = f"Added product {log.new_value}"
-
         elif log.action == "bulk_cards_added":
             log.description = f"Added bulk cards: {log.new_value}"
-
         elif log.action == "bulk_items_saved":
             log.description = "Saved bulk product changes"
-
         elif log.action == "item_deleted":
             log.description = f"Deleted product {log.old_value}"
-
         elif log.action == "item_updated":
             log.description = f"Updated product from {log.old_value} to {log.new_value}"
-
         elif log.action == "purchase_header_updated":
             log.description = "Updated purchase details"
-
         elif log.action == "purchase_finalized":
             log.description = "Finalized purchase"
-
         elif log.action == "purchase_reopened":
             log.description = f"Reopened purchase: {log.note}" if log.note else "Reopened purchase"
-
         elif log.action == "purchase_exported":
             log.description = "Exported purchase to CSV"
-
         else:
             log.description = log.note or log.action.replace("_", " ").title()
 
@@ -270,7 +260,7 @@ def add_purchase_item(request, purchase_id):
                 user=request.user,
                 action="item_added",
                 field_name="item",
-                new_value=f"{item.title} | qty={item.quantity} | cost={item.unit_cost}, retail ${item.retail.price}",
+                new_value=f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail.price}",
             )
 
             messages.success(request, "Product added successfully.")
