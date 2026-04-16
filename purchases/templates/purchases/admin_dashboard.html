@@ -572,31 +572,35 @@
 
     .admin-table th:nth-child(2),
     .admin-table td:nth-child(2) {
-        width: 80px; /* Buyer */
-    }
-
-    .admin-table th:nth-child(3),
-    .admin-table td:nth-child(3) {
         width: 110px; /* Location */
     }
 
-    .admin-table th:nth-child(8),
-    .admin-table td:nth-child(8),
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) {
+        width: 120px /*Total Purchase Amount */
+    }
+
+
+    .admin-table th:nth-child(6),
+    .admin-table td:nth-child(6),
+    .admin-table th:nth-child(7),
+    .admin-table td:nth-child(7)
     .admin-table th:nth-child(9),
     .admin-table td:nth-child(9) {
-        width: 150px; /* 8 = Created Date, 9 = Finalized Date */
+        width: 160px; /* Created Date, Finalized Date, Export At */
+    }
+
+    .admin-table th:nth-child(8),
+    .admin-table td:nth-child(8) {
+        width: 130px /*Export Status */
     }
 
     .admin-table th:nth-child(10),
     .admin-table td:nth-child(10) {
-        width: 170px; /*Export At*/
-    }
-    .admin-table th:nth-child(11),
-    .admin-table td:nth-child(11) {
         width: 110px; /*Export By*/
     }
-        .admin-table th:nth-child(12),
-    .admin-table td:nth-child(12) {
+        .admin-table th:nth-child(11),
+    .admin-table td:nth-child(11) {
         width: 90px; /*Actions*/
     }
 
@@ -1134,7 +1138,7 @@
                                         <th>Seller</th>
                                         <th class="col-money">Total Purchase Amount</th>
                                         <th>Reconciliation</th>
-                                        <th>Workflow</th>
+                                        <th>Status</th>
                                         <th>Created Date</th>
                                         <th>Finalized Date</th>
                                         {% if access.can_edit_all_purchases %}
@@ -1211,7 +1215,7 @@
                                         <th>Seller</th>
                                         <th>Total Purchase Amount</th>
                                         <th>Reconciliation</th>
-                                        <th>Workflow</th>
+                                        <th>Status</th>
                                         <th>Created Date</th>
                                         <th>Finalized Date</th>
                                         {% if access.can_edit_all_purchases %}
@@ -1265,12 +1269,10 @@
                                 <thead>
                                     <tr>
                                         <th>ISP Number</th>
-                                        <th>Buyer</th>
                                         <th>Location</th>
                                         <th>Seller</th>
                                         <th>Total Purchase Amount</th>
-                                        <th>Reconciliation</th>
-                                        <th>Workflow</th>
+                                        <th>Status</th>
                                         <th>Created Date</th>
                                         <th>Finalized Date</th>
                                         <th>Export Status</th>
@@ -1285,11 +1287,9 @@
                                     {% for purchase in completed_purchases %}
                                         <tr data-href="{% url 'purchase_detail' purchase.id %}">
                                             <td class="cell-strong">{{ purchase.isp_number }}</td>
-                                            <td>{{ purchase.buyer_initials }}</td>
                                             <td>{{ purchase.location }}</td>
                                             <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
                                             <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
-                                            <td><span class="status-pill pill-success">Balanced</span></td>
                                             <td><span class="status-pill pill-success">Finalized</span></td>
                                             <td>{{ purchase.created_at|localtime|date:"M j, Y g:i A" }}</td>
                                             <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y g:i A" }}{% else %}—{% endif %}</td>
@@ -1356,7 +1356,7 @@
                                         <th>Seller</th>
                                         <th>Total Purchase Amount</th>
                                         <th>Reconciliation</th>
-                                        <th>Workflow</th>
+                                        <th>Status</th>
                                         <th>Created Date</th>
                                         <th>Finalized Date</th>
                                         {% if access.can_edit_all_purchases %}
