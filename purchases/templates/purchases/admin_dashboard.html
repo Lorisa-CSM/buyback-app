@@ -79,7 +79,7 @@
 
     .admin-subtitle {
         margin: 8px 0 0;
-        color: var(--text-soft);
+        color: #7a8699;
         font-size: 0.96rem;
         line-height: 1.5;
         max-width: 760px;
@@ -276,6 +276,7 @@
         padding: 18px 18px 16px;
         transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         color: inherit;
+        border-top: 3px solid transparent;
     }
 
     .kpi-card:hover {
@@ -289,10 +290,10 @@
         box-shadow: 0 10px 24px rgba(0, 45, 98, 0.10);
     }   
 
-    .kpi-card.fix { background: linear-gradient(180deg, #fffafa 0%, #fff5f4 100%); }
-    .kpi-card.progress { background: linear-gradient(180deg, #fffdfa 0%, #fff8ee 100%); }
-    .kpi-card.complete { background: linear-gradient(180deg, #f7fdf9 0%, #effcf3 100%); }
-    .kpi-card.financial { background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%); }
+    .kpi-card.fix { border-top-color: #b42318; }
+    .kpi-card.progress { border-top-color: #b54708; }
+    .kpi-card.complete { border-top-color: #027a48; }
+    .kpi-card.financial { border-top-color: #002D62; }
 
     .kpi-label {
         font-size: 0.74rem;
@@ -340,8 +341,8 @@
 
     .toolbar-top {
         display: grid;
-        grid-template-columns: minmax(420px, 2fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr) minmax(140px, 0.72fr) minmax(140px, 0.72fr) auto;
-        gap: 12px;
+        grid-template-columns: minmax(520px, 2.4fr) minmax(140px, 0.7fr) minmax(140px, 0.7fr) minmax(120px, 0.6fr) minmax(120px, 0.6fr) auto;
+        gap: 10px;
         align-items: end;
     }
 
@@ -418,9 +419,8 @@
     .toolbar-actions {
         display: flex;
         gap: 8px;
-        align-items: end;
+        align-items: center;
         justify-content: flex-end;
-        flex-wrap: nowrap;
     }
 
     .filters-meta {
@@ -448,17 +448,14 @@
     }
 
     .tab-button {
-        appearance: none;
-        border: 1px solid var(--border);
+        border: 1px solid #d6dde8;
         background: #fff;
         color: var(--text-soft);
-        min-height: 40px;
-        padding: 0 14px;
+        min-height: 42px;
+        padding: 0 16px;
         border-radius: 999px;
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         font-weight: 800;
-        cursor: pointer;
-        transition: all 0.18s ease;
     }
 
     .tab-button:hover {
@@ -467,9 +464,10 @@
     }
 
     .tab-button.active {
-        background: rgba(0, 45, 98, 0.08);
-        border-color: rgba(0, 45, 98, 0.18);
-        color: var(--brand-navy);
+        background: var(--brand-navy);
+        border-color: var(--brand-navy);
+        color: #fff;
+        box-shadow: 0 6px 14px rgba(0, 45, 98, 0.18);
     }
 
     .table-panel {
@@ -539,10 +537,11 @@
         font-size: 0.74rem;
         text-transform: uppercase;
         letter-spacing: 0.065em;
-        color: #526071;
+        color: #344054;
         font-weight: 800;
-        background: #fbfcfe;
+        background: #f7f9fc;
         white-space: nowrap;
+        border-bottom: 1px solid #dde3ec;
     }
 
     .admin-table td {
@@ -557,7 +556,7 @@
     }
 
     .admin-table tbody tr:hover td {
-        background: #f8fafc;
+        background: #f4f7fb;
     }
 
     .cell-strong {
