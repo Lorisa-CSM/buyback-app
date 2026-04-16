@@ -1291,8 +1291,8 @@
                                             <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
                                             <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
                                             <td><span class="status-pill pill-success">Finalized</span></td>
-                                            <td>{{ purchase.created_at|localtime|date:"M j, Y g:i A" }}</td>
-                                            <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y g:i A" }}{% else %}—{% endif %}</td>
+                                            <td>{{ purchase.created_at|localtime|date:"M j, Y" }}</td>
+                                            <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y" }}{% else %}—{% endif %}</td>
                                             <td>
                                                 {% if purchase.workflow_status != "finalized" %}
                                                     <span class="status-pill pill-neutral">Not Eligible</span>
