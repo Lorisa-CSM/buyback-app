@@ -219,7 +219,6 @@
 
     .tools-link {
         display: block;
-        align-items: center;
         min-height: 40px;
         padding: 10px 12px;
         border-radius: 12px;
@@ -263,7 +262,7 @@
     .kpi-strip {
         display: grid;
         grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 14px;
+        gap: 16px;
     }
 
     .kpi-card {
@@ -271,12 +270,12 @@
         text-decoration: none;
         background: var(--surface);
         border: 1px solid var(--border);
+        border-top: 3px solid transparent;
         border-radius: 18px;
         box-shadow: var(--shadow-xs);
-        padding: 18px 18px 16px;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        padding: 20px 20px 18px;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
         color: inherit;
-        border-top: 3px solid transparent;
     }
 
     .kpi-card:hover {
@@ -286,36 +285,59 @@
     }
 
     .kpi-card.active {
-        border-color: rgba(0, 45, 98, 0.25);
-        box-shadow: 0 10px 24px rgba(0, 45, 98, 0.10);
-    }   
+        border-color: rgba(0, 45, 98, 0.35);
+        box-shadow: 0 14px 28px rgba(0, 45, 98, 0.14);
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
 
-    .kpi-card.fix { border-top-color: #b42318; }
-    .kpi-card.progress { border-top-color: #b54708; }
-    .kpi-card.complete { border-top-color: #027a48; }
-    .kpi-card.financial { border-top-color: #002D62; }
+    .kpi-card.fix {
+        border-top-color: #b42318;
+    }
+
+    .kpi-card.progress {
+        border-top-color: #b54708;
+    }
+
+    .kpi-card.complete {
+        border-top-color: #027a48;
+    }
+
+    .kpi-card.financial {
+        border-top-color: #002D62;
+    }
 
     .kpi-label {
-        font-size: 0.74rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--text-soft);
-        font-weight: 800;
-        margin-bottom: 8px;
+        letter-spacing: 0.07em;
+        color: var(--text-muted);
+        font-weight: 700;
+        margin-bottom: 10px;
     }
 
     .kpi-value {
-        font-size: 1.8rem;
-        font-weight: 800;
+        font-size: 1.95rem;
+        font-weight: 850;
         color: var(--text-strong);
-        line-height: 1.02;
-        letter-spacing: -0.03em;
+        line-height: 1;
+        letter-spacing: -0.035em;
     }
 
-    .kpi-value.success { color: var(--success-text); }
-    .kpi-value.warning { color: var(--warning-text); }
-    .kpi-value.danger { color: var(--danger-text); }
-    .kpi-value.navy { color: var(--brand-navy); }
+    .kpi-value.success {
+        color: var(--success-text);
+    }
+
+    .kpi-value.warning {
+        color: var(--warning-text);
+    }
+
+    .kpi-value.danger {
+        color: var(--danger-text);
+    }
+
+    .kpi-value.navy {
+        color: var(--brand-navy);
+    }
 
     .kpi-note {
         margin-top: 8px;
@@ -379,7 +401,7 @@
     .field select {
         width: 100%;
         max-width: 100%;
-        min-height: 42px;
+        min-height: 44px;
         padding: 10px 12px;
         border: 1px solid #cfd7e3;
         background-color: #ffffff;
@@ -398,12 +420,8 @@
         box-shadow: 0 0 0 4px rgba(0, 45, 98, 0.08);
     }
 
-    .search-field input {
-        min-height: 44px;
-    }
-
     .search-field {
-    min-width: 0;
+        min-width: 0;
     }
 
     .search-field input {
@@ -411,16 +429,12 @@
         font-size: 14px;
     }
 
-    .field input,
-    .field select {
-        min-height: 44px;
-    }
-    
     .toolbar-actions {
         display: flex;
         gap: 8px;
         align-items: center;
         justify-content: flex-end;
+        flex-wrap: nowrap;
     }
 
     .filters-meta {
@@ -519,12 +533,13 @@
     .admin-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 1120px;
+        min-width: 980px;
+        table-layout: fixed;
     }
 
     .admin-table th,
     .admin-table td {
-        padding: 15px 16px;
+        padding: 12px 12px;
         text-align: left;
         border-bottom: 1px solid var(--border-soft);
         vertical-align: middle;
@@ -550,6 +565,28 @@
         white-space: nowrap;
     }
 
+    .admin-table th:nth-child(1),
+    .admin-table td:nth-child(1) {
+        width: 120px;
+    }
+
+    .admin-table th:nth-child(2),
+    .admin-table td:nth-child(2) {
+        width: 80px;
+    }
+
+    .admin-table th:nth-child(3),
+    .admin-table td:nth-child(3) {
+        width: 110px;
+    }
+
+    .admin-table th:nth-child(8),
+    .admin-table td:nth-child(8),
+    .admin-table th:nth-child(9),
+    .admin-table td:nth-child(9) {
+        width: 150px;
+    }
+
     .admin-table tbody tr {
         cursor: pointer;
         transition: background 0.15s ease;
@@ -568,10 +605,18 @@
         font-weight: 700;
     }
 
+    .col-money {
+        width: 120px;
+        min-width: 120px;
+        max-width: 120px;
+        text-align: right;
+    }
+
     .seller-cell {
-        max-width: 210px;
+        max-width: 180px;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .status-pill {
@@ -611,6 +656,21 @@
     .pill-draft {
         background: rgba(0, 45, 98, 0.08);
         color: var(--brand-navy);
+    }
+
+    .pill-exported {
+        background: #ecfdf3;
+        color: #027a48;
+    }
+
+    .pill-ready {
+        background: #fff7e6;
+        color: #b54708;
+    }
+
+    .pill-ineligible {
+        background: #f2f4f7;
+        color: #475467;
     }
 
     .action-cell {
@@ -1059,7 +1119,7 @@
                                         <th>Buyer</th>
                                         <th>Location</th>
                                         <th>Seller</th>
-                                        <th>Total Purchase Amount</th>
+                                        <th class="col-money">Total Purchase Amount</th>
                                         <th>Reconciliation</th>
                                         <th>Workflow</th>
                                         <th>Created Date</th>
@@ -1076,7 +1136,7 @@
                                             <td>{{ purchase.buyer_initials }}</td>
                                             <td>{{ purchase.location }}</td>
                                             <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
                                             <td>
                                                 {% if purchase.reconciliation_status == "under" %}
                                                     <span class="status-pill pill-warning">Under</span>
@@ -1200,6 +1260,9 @@
                                         <th>Workflow</th>
                                         <th>Created Date</th>
                                         <th>Finalized Date</th>
+                                        <th>Export Status</th>
+                                        <th>Exported At</th>
+                                        <th>Exported By</th>
                                         {% if access.can_edit_all_purchases %}
                                             <th class="action-cell">Actions</th>
                                         {% endif %}
@@ -1217,6 +1280,30 @@
                                             <td><span class="status-pill pill-success">Finalized</span></td>
                                             <td>{{ purchase.created_at|localtime|date:"M j, Y g:i A" }}</td>
                                             <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y g:i A" }}{% else %}—{% endif %}</td>
+                                            <td>
+                                                {% if purchase.workflow_status != "finalized" %}
+                                                    <span class="status-pill pill-neutral">Not Eligible</span>
+                                                {% elif purchase.exported_at %}
+                                                    <span class="status-pill pill-success">Exported</span>
+                                                {% else %}
+                                                    <span class="status-pill pill-warning">Ready for Export</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if purchase.exported_at %}
+                                                    {{ purchase.exported_at|localtime|date:"M j, Y g:i A" }}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if purchase.exported_by %}
+                                                    {{ purchase.exported_by.username }}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </td>
+                                            
                                             {% if access.can_edit_all_purchases %}
                                                 <td class="action-cell" onclick="event.stopPropagation();">
                                                     <div class="row-actions">
