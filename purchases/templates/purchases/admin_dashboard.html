@@ -87,8 +87,8 @@
 
     .admin-header-right {
         display: flex;
-        align-items: center;
-        gap: 10px;
+        align-items: flex-end;
+        gap: 12px;
         flex-wrap: wrap;
         justify-content: flex-end;
     }
@@ -100,8 +100,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 42px;
-        padding: 0 16px;
+        min-height: 46px;
+        padding: 0 18px;
         border-radius: 12px;
         font-weight: 700;
         font-size: 0.9rem;
@@ -144,9 +144,10 @@
         color: var(--text-soft);
         border-color: transparent;
         padding: 0;
-        min-height: auto;
-        font-size: 0.86rem;
+        min-height: 22px;
+        font-size: 0.84rem;
         font-weight: 700;
+        line-height: 1;
     }
 
     .btn-ghost:hover {
@@ -160,7 +161,9 @@
 
     .admin-tools-toggle {
         gap: 8px;
-        padding-right: 14px;
+        padding-right: 16px;
+        padding-left: 16px;
+        min-height: 46px;
     }
 
     .admin-tools-caret {
@@ -284,7 +287,7 @@
     .kpi-card.active {
         border-color: rgba(0, 45, 98, 0.25);
         box-shadow: 0 10px 24px rgba(0, 45, 98, 0.10);
-    }
+    }   
 
     .kpi-card.fix { background: linear-gradient(180deg, #fffafa 0%, #fff5f4 100%); }
     .kpi-card.progress { background: linear-gradient(180deg, #fffdfa 0%, #fff8ee 100%); }
@@ -337,8 +340,8 @@
 
     .toolbar-top {
         display: grid;
-        grid-template-columns: minmax(280px, 1.5fr) repeat(3, minmax(140px, 0.8fr)) auto;
-        gap: 10px;
+        grid-template-columns: minmax(420px, 2fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr) minmax(140px, 0.72fr) minmax(140px, 0.72fr) auto;
+        gap: 12px;
         align-items: end;
     }
 
@@ -398,16 +401,30 @@
         min-height: 44px;
     }
 
+    .search-field {
+    min-width: 0;
+    }
+
+    .search-field input {
+        min-height: 46px;
+        font-size: 14px;
+    }
+
+    .field input,
+    .field select {
+        min-height: 44px;
+    }
+    
     .toolbar-actions {
         display: flex;
-        gap: 10px;
-        align-items: center;
+        gap: 8px;
+        align-items: end;
         justify-content: flex-end;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
     }
 
     .filters-meta {
-        margin-top: 10px;
+        margin-top: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -474,17 +491,17 @@
 
     .table-title {
         margin: 0;
-        font-size: 1rem;
+        font-size: 1.06rem;
         font-weight: 800;
         color: var(--text-strong);
         letter-spacing: -0.02em;
     }
 
     .table-subtitle {
-        margin: 4px 0 0;
+        margin: 5px 0 0;
         color: var(--text-soft);
-        font-size: 0.86rem;
-        line-height: 1.4;
+        font-size: 0.88rem;
+        line-height: 1.45;
     }
 
     .table-count {
@@ -498,6 +515,7 @@
         border: 1px solid var(--border-soft);
         border-radius: 16px;
         background: #fff;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
     }
 
     .admin-table {
@@ -508,7 +526,7 @@
 
     .admin-table th,
     .admin-table td {
-        padding: 13px 14px;
+        padding: 15px 16px;
         text-align: left;
         border-bottom: 1px solid var(--border-soft);
         vertical-align: middle;
@@ -518,17 +536,17 @@
         position: sticky;
         top: 0;
         z-index: 1;
-        font-size: 0.72rem;
+        font-size: 0.74rem;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--text-soft);
+        letter-spacing: 0.065em;
+        color: #526071;
         font-weight: 800;
-        background: #fcfdff;
+        background: #fbfcfe;
         white-space: nowrap;
     }
 
     .admin-table td {
-        font-size: 0.9rem;
+        font-size: 0.94rem;
         color: var(--text-main);
         white-space: nowrap;
     }
@@ -688,12 +706,14 @@
         }
 
         .toolbar-top {
-            grid-template-columns: minmax(280px, 1fr) repeat(3, minmax(140px, 1fr));
+            grid-template-columns: minmax(320px, 1fr) repeat(3, minmax(140px, 1fr));
         }
 
         .toolbar-actions {
             grid-column: 1 / -1;
             justify-content: flex-start;
+            align-items: center;
+            flex-wrap: wrap;
         }
     }
 
