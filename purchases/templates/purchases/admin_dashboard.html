@@ -567,24 +567,37 @@
 
     .admin-table th:nth-child(1),
     .admin-table td:nth-child(1) {
-        width: 120px;
+        width: 120px; /* ISP */
     }
 
     .admin-table th:nth-child(2),
     .admin-table td:nth-child(2) {
-        width: 80px;
+        width: 80px; /* Buyer */
     }
 
     .admin-table th:nth-child(3),
     .admin-table td:nth-child(3) {
-        width: 110px;
+        width: 110px; /* Location */
     }
 
     .admin-table th:nth-child(8),
     .admin-table td:nth-child(8),
     .admin-table th:nth-child(9),
     .admin-table td:nth-child(9) {
-        width: 150px;
+        width: 150px; /* 8 = Created Date, 9 = Finalized Date */
+    }
+
+    .admin-table th:nth-child(10),
+    .admin-table td:nth-child(10) {
+        width: 170px; /*Export At*/
+    }
+    .admin-table th:nth-child(11),
+    .admin-table td:nth-child(11) {
+        width: 110px; /*Export By*/
+    }
+        .admin-table th:nth-child(12),
+    .admin-table td:nth-child(12) {
+        width: 90px; /*Actions*/
     }
 
     .admin-table tbody tr {
@@ -613,7 +626,7 @@
     }
 
     .seller-cell {
-        max-width: 180px;
+        max-width: 160px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
