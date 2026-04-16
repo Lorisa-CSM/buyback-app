@@ -363,7 +363,7 @@
 
     .toolbar-top {
         display: grid;
-        grid-template-columns: minmax(520px, 2.4fr) minmax(140px, 0.7fr) minmax(140px, 0.7fr) minmax(120px, 0.6fr) minmax(120px, 0.6fr) auto;
+        grid-template-columns: minmax(420px, 2.2fr) minmax(140px, 0.75fr) minmax(140px, 0.75fr) minmax(130px, 0.65fr) minmax(130px, 0.65fr) auto;
         gap: 10px;
         align-items: end;
     }
@@ -534,12 +534,12 @@
         width: 100%;
         border-collapse: collapse;
         min-width: 980px;
-        table-layout: fixed;
+        table-layout: auto;
     }
 
     .admin-table th,
     .admin-table td {
-        padding: 12px 12px;
+        padding: 13px 14px;
         text-align: left;
         border-bottom: 1px solid var(--border-soft);
         vertical-align: middle;
@@ -565,45 +565,6 @@
         white-space: nowrap;
     }
 
-    .admin-table th:nth-child(1),
-    .admin-table td:nth-child(1) {
-        width: 120px; /* ISP */
-    }
-
-    .admin-table th:nth-child(2),
-    .admin-table td:nth-child(2) {
-        width: 110px; /* Location */
-    }
-
-    .admin-table th:nth-child(4),
-    .admin-table td:nth-child(4) {
-        width: 120px /*Total Purchase Amount */
-    }
-
-
-    .admin-table th:nth-child(6),
-    .admin-table td:nth-child(6),
-    .admin-table th:nth-child(7),
-    .admin-table td:nth-child(7)
-    .admin-table th:nth-child(9),
-    .admin-table td:nth-child(9) {
-        width: 160px; /* Created Date, Finalized Date, Export At */
-    }
-
-    .admin-table th:nth-child(8),
-    .admin-table td:nth-child(8) {
-        width: 130px /*Export Status */
-    }
-
-    .admin-table th:nth-child(10),
-    .admin-table td:nth-child(10) {
-        width: 110px; /*Export By*/
-    }
-        .admin-table th:nth-child(11),
-    .admin-table td:nth-child(11) {
-        width: 90px; /*Actions*/
-    }
-
     .admin-table tbody tr {
         cursor: pointer;
         transition: background 0.15s ease;
@@ -625,12 +586,11 @@
     .col-money {
         width: 120px;
         min-width: 120px;
-        max-width: 120px;
         text-align: right;
     }
 
     .seller-cell {
-        max-width: 160px;
+        max-width: 180px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -774,6 +734,92 @@
         font-size: 0.8rem;
         color: var(--text-soft);
         margin-top: 2px;
+    }
+
+    /* Completed table only */
+    .completed-table {
+        width: 100%;
+        min-width: 0;
+        table-layout: fixed;
+    }
+
+    .completed-table th,
+    .completed-table td {
+        padding: 14px 10px;
+        vertical-align: middle;
+    }
+
+    .completed-table th {
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.2;
+        font-size: 0.72rem;
+    }
+
+    .completed-table td {
+        font-size: 0.9rem;
+        line-height: 1.3;
+    }
+
+    .completed-table .col-isp {
+        width: 14%;
+    }
+
+    .completed-table .col-location {
+        width: 11%;
+    }
+
+    .completed-table .col-seller {
+        width: 14%;
+    }
+
+    .completed-table .col-money {
+        width: 12%;
+    }
+
+    .completed-table .col-status {
+        width: 9%;
+    }
+
+    .completed-table .col-date {
+        width: 12%;
+    }
+
+    .completed-table .col-export-status {
+        width: 13%;
+    }
+
+    .completed-table .col-exported-at {
+        width: 13%;
+    }
+
+    .completed-table .col-exported-by {
+        width: 10%;
+    }
+
+    .completed-table td:nth-child(1),
+    .completed-table td:nth-child(2),
+    .completed-table td:nth-child(4),
+    .completed-table td:nth-child(5),
+    .completed-table td:nth-child(6),
+    .completed-table td:nth-child(7),
+    .completed-table td:nth-child(8),
+    .completed-table td:nth-child(9),
+    .completed-table td:nth-child(10) {
+        white-space: nowrap;
+    }
+
+    .completed-table .seller-cell {
+        max-width: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .completed-table td.col-money,
+    .completed-table th.col-money {
+        text-align: right;
     }
 
     @media (max-width: 1280px) {
@@ -962,7 +1008,6 @@
                     </div>
                 {% endif %}
             </div>
-
         </div>
     </section>
 
@@ -1213,7 +1258,7 @@
                                         <th>Buyer</th>
                                         <th>Location</th>
                                         <th>Seller</th>
-                                        <th>Total Purchase Amount</th>
+                                        <th class="col-money">Total Purchase Amount</th>
                                         <th>Reconciliation</th>
                                         <th>Status</th>
                                         <th>Created Date</th>
@@ -1230,7 +1275,7 @@
                                             <td>{{ purchase.buyer_initials }}</td>
                                             <td>{{ purchase.location }}</td>
                                             <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
                                             <td><span class="status-pill pill-success">Balanced</span></td>
                                             <td><span class="status-pill pill-draft">Draft</span></td>
                                             <td>{{ purchase.created_at|localtime|date:"M j, Y g:i A" }}</td>
@@ -1265,22 +1310,19 @@
 
                     {% if completed_purchases %}
                         <div class="table-wrap">
-                            <table class="admin-table">
+                            <table class="admin-table completed-table">
                                 <thead>
                                     <tr>
-                                        <th>ISP Number</th>
-                                        <th>Location</th>
-                                        <th>Seller</th>
-                                        <th>Total Purchase Amount</th>
-                                        <th>Status</th>
-                                        <th>Created Date</th>
-                                        <th>Finalized Date</th>
-                                        <th>Export Status</th>
-                                        <th>Exported At</th>
-                                        <th>Exported By</th>
-                                        {% if access.can_edit_all_purchases %}
-                                            <th class="action-cell">Actions</th>
-                                        {% endif %}
+                                        <th class="col-isp">ISP Number</th>
+                                        <th class="col-location">Location</th>
+                                        <th class="col-seller">Seller</th>
+                                        <th class="col-money">Total Purchase Amount</th>
+                                        <th class="col-status">Status</th>
+                                        <th class="col-date">Created Date</th>
+                                        <th class="col-date">Finalized Date</th>
+                                        <th class="col-export-status">Export Status</th>
+                                        <th class="col-exported-at">Exported At</th>
+                                        <th class="col-exported-by">Exported By</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1289,17 +1331,15 @@
                                             <td class="cell-strong">{{ purchase.isp_number }}</td>
                                             <td>{{ purchase.location }}</td>
                                             <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
                                             <td><span class="status-pill pill-success">Finalized</span></td>
                                             <td>{{ purchase.created_at|localtime|date:"M j, Y" }}</td>
                                             <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y" }}{% else %}—{% endif %}</td>
                                             <td>
-                                                {% if purchase.workflow_status != "finalized" %}
-                                                    <span class="status-pill pill-neutral">Not Eligible</span>
-                                                {% elif purchase.exported_at %}
-                                                    <span class="status-pill pill-success">Exported</span>
+                                                {% if purchase.exported_at %}
+                                                    <span class="status-pill pill-exported">Exported</span>
                                                 {% else %}
-                                                    <span class="status-pill pill-warning">Ready for Export</span>
+                                                    <span class="status-pill pill-ready">Ready for Export</span>
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -1316,14 +1356,6 @@
                                                     —
                                                 {% endif %}
                                             </td>
-                                            
-                                            {% if access.can_edit_all_purchases %}
-                                                <td class="action-cell" onclick="event.stopPropagation();">
-                                                    <div class="row-actions">
-                                                        <a href="{% url 'purchase_detail' purchase.id %}" class="mini-action">View</a>
-                                                    </div>
-                                                </td>
-                                            {% endif %}
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -1354,7 +1386,7 @@
                                         <th>Buyer</th>
                                         <th>Location</th>
                                         <th>Seller</th>
-                                        <th>Total Purchase Amount</th>
+                                        <th class="col-money">Total Purchase Amount</th>
                                         <th>Reconciliation</th>
                                         <th>Status</th>
                                         <th>Created Date</th>
@@ -1371,7 +1403,7 @@
                                             <td>{{ purchase.buyer_initials }}</td>
                                             <td>{{ purchase.location }}</td>
                                             <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
                                             <td>
                                                 {% if purchase.reconciliation_status == "under" %}
                                                     <span class="status-pill pill-warning">Under</span>
