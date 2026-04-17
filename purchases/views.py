@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from .forms import PurchaseForm, PurchaseItemsForm, PurchaseItemFormSet, BulkCardForm
 from .models import Purchase, PurchaseItem
@@ -47,6 +48,11 @@ def get_next_item_sequence(purchase):
             continue
 
     return max_seq + 1
+
+
+def build_export_batch_name():
+    now_local = timezone.localtime()
+    return now_local.strftime("BATCH-%Y%m%d-%H%M%S")
 
 
 def recalculate_purchase_totals(purchase):
@@ -169,8 +175,8 @@ def purchase_home(request):
 @login_required
 def purchase_detail(request, purchase_id):
     purchase = get_object_or_404(
-     Purchase.objects.prefetch_related("items", "edit_logs__edited_by__buyerprofile"),
-         id=purchase_id
+        Purchase.objects.prefetch_related("items", "edit_logs__edited_by__buyerprofile"),
+        id=purchase_id
     )
 
     access = get_user_profile_flags(request.user)
@@ -205,7 +211,7 @@ def purchase_detail(request, purchase_id):
         elif log.action == "purchase_reopened":
             log.description = f"Reopened purchase: {log.note}" if log.note else "Reopened purchase"
         elif log.action == "purchase_exported":
-            log.description = "Exported purchase to CSV"
+            log.description = log.note or "Exported purchase"
         else:
             log.description = log.note or log.action.replace("_", " ").title()
 
@@ -260,7 +266,7 @@ def add_purchase_item(request, purchase_id):
                 user=request.user,
                 action="item_added",
                 field_name="item",
-                new_value=f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail.price}",
+                new_value=f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail_price}",
             )
 
             messages.success(request, "Product added successfully.")
@@ -381,10 +387,10 @@ def add_purchase_items_bulk(request, purchase_id):
             saved_descriptions = []
             for item in items:
                 is_blank_row = (
-                not str(item.title or "").strip()
-                and not item.quantity
-                and not item.unit_cost
-                and not item.retail_price
+                    not str(item.title or "").strip()
+                    and not item.quantity
+                    and not item.unit_cost
+                    and not item.retail_price
                 )
 
                 if is_blank_row:
@@ -398,6 +404,7 @@ def add_purchase_items_bulk(request, purchase_id):
 
                 item.line_total_cost = item.quantity * item.unit_cost
                 item.save()
+
                 saved_descriptions.append(
                     f"{item.sku} | {item.title} | qty={item.quantity} | cost={item.unit_cost}"
                 )
@@ -471,7 +478,7 @@ def finalize_purchase(request, purchase_id):
     ):
         purchase.workflow_status = "finalized"
         purchase.finalized_at = timezone.now()
-        purchase.save()
+        purchase.save(update_fields=["workflow_status", "finalized_at", "updated_at"])
 
         log_purchase_edit(
             purchase=purchase,
@@ -505,7 +512,7 @@ def delete_purchase_item(request, purchase_id, item_id):
         return redirect("purchase_detail", purchase_id=purchase.id)
 
     if request.method == "POST":
-        deleted_item = f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail_price}",
+        deleted_item = f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail_price}"
         item.delete()
         purchase.refresh_from_db()
         recalculate_purchase_totals(purchase)
@@ -561,14 +568,14 @@ def edit_purchase_item(request, purchase_id, item_id):
             recalculate_purchase_totals(purchase)
 
             old_item = (
-                f"{original_item['title']}, {original_item['quantity']},"
+                f"{original_item['title']}, qty={original_item['quantity']}, "
                 f"cost={original_item['unit_cost']}"
             )
             new_item = (
                 f"{item.title}, qty={item.quantity}, "
                 f"cost={item.unit_cost}, retail ${item.retail_price}"
             )
-            
+
             log_purchase_edit(
                 purchase=purchase,
                 user=request.user,
@@ -823,7 +830,7 @@ def admin_dashboard(request):
         messages.error(request, "You do not have permission to view reports.")
         return redirect("buyer_dashboard")
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     default_start = today - timedelta(days=30)
 
     date_from = request.GET.get("date_from") or default_start.isoformat()
@@ -835,7 +842,7 @@ def admin_dashboard(request):
     export_status = request.GET.get("export_status", "").strip().lower()
     query = request.GET.get("q", "").strip()
 
-    purchases = Purchase.objects.prefetch_related("items").filter(
+    purchases = Purchase.objects.prefetch_related("items").select_related("exported_by").filter(
         created_at__date__gte=date_from,
         created_at__date__lte=date_to,
     ).order_by("-created_at")
@@ -855,7 +862,7 @@ def admin_dashboard(request):
 
     if payment_filter:
         purchases = purchases.filter(
-            Q(payment_method=payment_filter) | Q(second_payment_method=payment_filter)
+            Q(payment_method__iexact=payment_filter) | Q(second_payment_method__iexact=payment_filter)
         )
 
     if export_status == "exported":
@@ -910,6 +917,28 @@ def admin_dashboard(request):
     if total_revenue > 0:
         avg_margin = ((total_revenue - total_cost) / total_revenue) * 100
         avg_margin = f"{avg_margin:.1f}%"
+
+    completed_exported_count = completed_purchases.filter(exported_at__isnull=False).count()
+    completed_exported_pct = None
+    if completed_count > 0:
+        completed_exported_pct = (completed_exported_count / completed_count) * 100
+
+    avg_finalize_days = None
+    finalized_with_dates = completed_purchases.filter(
+        finalized_at__isnull=False,
+        created_at__isnull=False,
+    )
+
+    if finalized_with_dates.exists():
+        total_seconds = 0
+        total_records = 0
+        for purchase in finalized_with_dates:
+            delta = purchase.finalized_at - purchase.created_at
+            total_seconds += delta.total_seconds()
+            total_records += 1
+
+        if total_records:
+            avg_finalize_days = total_seconds / 86400 / total_records
 
     buyer_summary = {}
     for purchase in completed_purchases:
@@ -1019,6 +1048,8 @@ def admin_dashboard(request):
         "buyer_choices": buyer_choices,
         "location_choices": location_choices,
         "export_status": export_status,
+        "completed_exported_pct": completed_exported_pct,
+        "avg_finalize_days": avg_finalize_days,
     })
 
 
@@ -1030,10 +1061,12 @@ def export_purchase_csv(request, purchase_id):
         messages.error(request, "You do not have permission to export purchases.")
         return redirect("buyer_dashboard")
 
-    purchase = get_object_or_404(Purchase, id=purchase_id)
+    purchase = get_object_or_404(Purchase.objects.prefetch_related("items"), id=purchase_id)
 
     if purchase.workflow_status != "finalized":
         return redirect("purchase_detail", purchase_id=purchase.id)
+
+    batch_name = build_export_batch_name()
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="{purchase.isp_number}.csv"'
@@ -1052,14 +1085,15 @@ def export_purchase_csv(request, purchase_id):
 
     purchase.exported_at = timezone.now()
     purchase.exported_by = request.user
+    purchase.export_batch_name = batch_name
     purchase.export_count += 1
-    purchase.save()
+    purchase.save(update_fields=["exported_at", "exported_by", "export_batch_name", "export_count"])
 
     log_purchase_edit(
         purchase=purchase,
         user=request.user,
         action="purchase_exported",
-        note=f"Single purchase CSV exported. Export count is now {purchase.export_count}.",
+        note=f"Single purchase CSV exported in batch {batch_name}. Export count is now {purchase.export_count}.",
     )
 
     return response
@@ -1073,7 +1107,7 @@ def export_filtered_finalized_csv(request):
         messages.error(request, "You do not have permission to export purchases.")
         return redirect("buyer_dashboard")
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     default_start = today - timedelta(days=30)
 
     date_from = request.GET.get("date_from") or default_start.isoformat()
@@ -1086,9 +1120,9 @@ def export_filtered_finalized_csv(request):
 
     purchases = Purchase.objects.prefetch_related("items").filter(
         workflow_status="finalized",
-        created_at__date__gte=date_from,
-        created_at__date__lte=date_to,
-    ).order_by("-created_at")
+        finalized_at__date__gte=date_from,
+        finalized_at__date__lte=date_to,
+    ).order_by("-finalized_at", "-created_at")
 
     if buyer_filter:
         purchases = purchases.filter(buyer_initials__iexact=buyer_filter)
@@ -1098,7 +1132,8 @@ def export_filtered_finalized_csv(request):
 
     if payment_filter:
         purchases = purchases.filter(
-            Q(payment_method=payment_filter) | Q(second_payment_method=payment_filter)
+            Q(payment_method__iexact=payment_filter) |
+            Q(second_payment_method__iexact=payment_filter)
         )
 
     if export_status == "exported":
@@ -1114,8 +1149,10 @@ def export_filtered_finalized_csv(request):
             Q(buyer_initials__icontains=query)
         )
 
+    batch_name = build_export_batch_name()
+
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="finalized_purchases_export.csv"'
+    response["Content-Disposition"] = f'attachment; filename="finalized_purchases_export_{batch_name}.csv"'
 
     writer = csv.writer(response)
     writer.writerow([
@@ -1135,6 +1172,7 @@ def export_filtered_finalized_csv(request):
         "Primary Payment Amount",
         "Second Payment Method",
         "Second Payment Amount",
+        "Export Batch Name",
     ])
 
     exported_purchase_ids = []
@@ -1143,7 +1181,7 @@ def export_filtered_finalized_csv(request):
         for item in purchase.items.all():
             writer.writerow([
                 purchase.isp_number,
-                purchase.finalized_at.strftime("%Y-%m-%d %H:%M") if purchase.finalized_at else "",
+                timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %H:%M") if purchase.finalized_at else "",
                 purchase.buyer_initials,
                 purchase.location,
                 purchase.seller_first_name,
@@ -1158,6 +1196,7 @@ def export_filtered_finalized_csv(request):
                 purchase.primary_payment_amount,
                 purchase.second_payment_method,
                 purchase.second_payment_amount,
+                batch_name,
             ])
 
         exported_purchase_ids.append(purchase.id)
@@ -1167,15 +1206,107 @@ def export_filtered_finalized_csv(request):
         Purchase.objects.filter(id__in=exported_purchase_ids).update(
             exported_at=timestamp,
             exported_by=request.user,
+            export_batch_name=batch_name,
         )
 
         for purchase in purchases:
+            purchase.export_count += 1
+            purchase.save(update_fields=["export_count"])
             log_purchase_edit(
                 purchase=purchase,
                 user=request.user,
                 action="purchase_exported",
-                note="Included in filtered finalized CSV export.",
+                note=f"Included in filtered finalized CSV export batch {batch_name}.",
             )
+
+    return response
+
+
+@login_required
+@require_POST
+def bulk_export_completed_purchases(request):
+    access = get_user_profile_flags(request.user)
+
+    if not can_view_reports(access):
+        messages.error(request, "You do not have permission to export purchases.")
+        return redirect("buyer_dashboard")
+
+    selected_ids = request.POST.getlist("selected_purchase_ids")
+    action = request.POST.get("bulk_action", "").strip()
+
+    if not selected_ids:
+        messages.error(request, "No completed purchases were selected.")
+        return redirect("admin_dashboard")
+
+    purchases = Purchase.objects.filter(
+        id__in=selected_ids,
+        workflow_status="finalized"
+    ).order_by("-finalized_at", "-created_at")
+
+    if not purchases.exists():
+        messages.error(request, "No valid finalized purchases were found for export.")
+        return redirect("admin_dashboard")
+
+    if action not in {"export_selected", "mark_exported"}:
+        messages.error(request, "Invalid bulk action.")
+        return redirect("admin_dashboard")
+
+    batch_name = build_export_batch_name()
+    export_time = timezone.now()
+
+    for purchase in purchases:
+        purchase.exported_at = export_time
+        purchase.exported_by = request.user
+        purchase.export_batch_name = batch_name
+        purchase.export_count += 1
+        purchase.save(update_fields=["exported_at", "exported_by", "export_batch_name", "export_count"])
+
+        log_purchase_edit(
+            purchase=purchase,
+            user=request.user,
+            action="purchase_exported",
+            note=f"Included in bulk export batch {batch_name}.",
+        )
+
+    if action == "mark_exported":
+        messages.success(
+            request,
+            f"{purchases.count()} completed purchase(s) marked exported in batch {batch_name}."
+        )
+        return redirect("admin_dashboard")
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{batch_name}_completed_orders.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "ISP Number",
+        "Finalized Date",
+        "Location",
+        "Seller First Name",
+        "Seller Last Name",
+        "Purchase Total Amount",
+        "Primary Payment Method",
+        "Primary Payment Amount",
+        "Second Payment Method",
+        "Second Payment Amount",
+        "Export Batch",
+    ])
+
+    for purchase in purchases:
+        writer.writerow([
+            purchase.isp_number,
+            timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %H:%M") if purchase.finalized_at else "",
+            purchase.location,
+            purchase.seller_first_name,
+            purchase.seller_last_name,
+            purchase.purchase_total_amount,
+            purchase.payment_method,
+            purchase.primary_payment_amount,
+            purchase.second_payment_method,
+            purchase.second_payment_amount,
+            batch_name,
+        ])
 
     return response
 
@@ -1201,7 +1332,14 @@ def reopen_purchase(request, purchase_id):
         purchase.reopened_at = timezone.now()
         purchase.reopened_by = request.user
         purchase.reopen_reason = reopen_reason
-        purchase.save()
+        purchase.save(update_fields=[
+            "workflow_status",
+            "finalized_at",
+            "reopened_at",
+            "reopened_by",
+            "reopen_reason",
+            "updated_at",
+        ])
 
         log_purchase_edit(
             purchase=purchase,
@@ -1211,8 +1349,6 @@ def reopen_purchase(request, purchase_id):
         )
 
     return redirect("purchase_detail", purchase_id=purchase.id)
-
-
 
 
 @login_required
@@ -1233,6 +1369,7 @@ def download_purchase_order(request, purchase_id):
         "buyer": access["profile"],
         "access": access,
     })
+
 
 @login_required
 def export_accounting_report_csv(request):

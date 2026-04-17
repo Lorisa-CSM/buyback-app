@@ -96,7 +96,9 @@
     .btn-primary,
     .btn-secondary,
     .btn-ghost,
-    button {
+    .tab-button,
+    .mini-action,
+    .admin-tools-toggle {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -113,15 +115,13 @@
         box-sizing: border-box;
     }
 
-    .btn-primary,
-    button {
+    .btn-primary {
         background: linear-gradient(180deg, var(--brand-navy-2) 0%, var(--brand-navy) 100%);
         color: #fff;
         box-shadow: 0 8px 18px rgba(0, 45, 98, 0.14);
     }
 
-    .btn-primary:hover,
-    button:hover {
+    .btn-primary:hover {
         transform: translateY(-1px);
         box-shadow: 0 12px 24px rgba(0, 45, 98, 0.18);
         color: #fff;
@@ -132,10 +132,12 @@
         background: #fff;
         color: var(--text-main);
         border-color: var(--border);
+        box-shadow: none;
     }
 
     .btn-secondary:hover {
         background: #f8fbff;
+        color: var(--text-main);
         text-decoration: none;
     }
 
@@ -164,6 +166,13 @@
         padding-right: 16px;
         padding-left: 16px;
         min-height: 46px;
+        background: #fff;
+        color: var(--text-main);
+        border-color: var(--border);
+    }
+
+    .admin-tools-toggle:hover {
+        background: #f8fbff;
     }
 
     .admin-tools-caret {
@@ -176,6 +185,10 @@
     .admin-tools.open .admin-tools-menu {
         display: block;
         animation: toolsFadeIn 0.16s ease-out;
+    }
+
+    .admin-tools.open .admin-tools-caret {
+        transform: rotate(180deg);
     }
 
     @keyframes toolsFadeIn {
@@ -370,7 +383,7 @@
 
     .toolbar-bottom {
         display: none;
-        grid-template-columns: repeat(4, minmax(140px, 1fr));
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
         gap: 10px;
         align-items: end;
         margin-top: 12px;
@@ -739,7 +752,7 @@
     /* Completed table only */
     .completed-table {
         width: 100%;
-        min-width: 0;
+        min-width: 1080px;
         table-layout: fixed;
     }
 
@@ -763,7 +776,7 @@
     }
 
     .completed-table .col-isp {
-        width: 14%;
+        width: 15%;
     }
 
     .completed-table .col-location {
@@ -771,7 +784,7 @@
     }
 
     .completed-table .col-seller {
-        width: 14%;
+        width: 16%;
     }
 
     .completed-table .col-money {
@@ -779,15 +792,15 @@
     }
 
     .completed-table .col-status {
-        width: 9%;
+        width: 10%;
     }
 
     .completed-table .col-date {
-        width: 12%;
+        width: 11%;
     }
 
     .completed-table .col-export-status {
-        width: 13%;
+        width: 12%;
     }
 
     .completed-table .col-exported-at {
@@ -796,18 +809,6 @@
 
     .completed-table .col-exported-by {
         width: 10%;
-    }
-
-    .completed-table td:nth-child(1),
-    .completed-table td:nth-child(2),
-    .completed-table td:nth-child(4),
-    .completed-table td:nth-child(5),
-    .completed-table td:nth-child(6),
-    .completed-table td:nth-child(7),
-    .completed-table td:nth-child(8),
-    .completed-table td:nth-child(9),
-    .completed-table td:nth-child(10) {
-        white-space: nowrap;
     }
 
     .completed-table .seller-cell {
@@ -899,9 +900,8 @@
 
         .btn-primary,
         .btn-secondary,
-        .btn-ghost,
         .tab-button,
-        button {
+        .admin-tools-toggle {
             width: 100%;
         }
 
@@ -937,7 +937,7 @@
                     <a href="#" class="btn-primary">Add Buyer</a>
 
                     <div class="admin-tools" id="adminTools">
-                        <button type="button" class="btn-secondary admin-tools-toggle" id="adminToolsToggle">
+                        <button type="button" class="admin-tools-toggle" id="adminToolsToggle">
                             Admin Tools
                             <span class="admin-tools-caret">▾</span>
                         </button>
@@ -1089,7 +1089,7 @@
                         </div>
 
                         <div class="toolbar-actions">
-                            <button type="submit">Apply Filters</button>
+                            <button type="submit" class="btn-primary">Apply Filters</button>
                             <button type="button" class="btn-secondary" id="moreFiltersToggle">More Filters</button>
                         </div>
                     </div>
@@ -1122,13 +1122,6 @@
                                 <option value="">All</option>
                                 <option value="not_exported" {% if export_status == "not_exported" %}selected{% endif %}>Not Exported</option>
                                 <option value="exported" {% if export_status == "exported" %}selected{% endif %}>Exported</option>
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label for="transaction_type">Transaction Type</label>
-                            <select id="transaction_type" name="transaction_type">
-                                <option value="">All Transaction Types</option>
                             </select>
                         </div>
                     </div>
