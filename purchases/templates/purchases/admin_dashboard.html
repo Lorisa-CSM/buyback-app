@@ -1083,7 +1083,7 @@
                     </div>
 
                     <div class="filters-meta">
-                        <span class="filters-hint">Search is prioritized. Use More Filters only when needed.</span>
+                        <span class="filters-hint">Search is prioritized. Use more filters only when needed.</span>
                         <a href="{% url 'admin_dashboard' %}" class="btn-ghost">Clear All</a>
                     </div>
                 </form>
@@ -1477,7 +1477,7 @@
                                     <div class="module-item-label">Manage Users</div>
                                     <div class="module-item-copy">Roles, passwords, status, and user administration.</div>
                                 </div>
-                                <span class="btn-secondary btn-disabled">Pending</span>
+                                <a href="{% url 'manage_users' %}" class="btn-secondary">Open</a>
                             </li>
 
                             <li>
@@ -1485,7 +1485,7 @@
                                     <div class="module-item-label">Add Buyer</div>
                                     <div class="module-item-copy">Create a new buyer profile and grant access.</div>
                                 </div>
-                                <span class="btn-secondary btn-disabled">Pending</span>
+                                <a href="{% url 'add_buyer' %}" class="btn-secondary">Open</a>
                             </li>
 
                             <li>
@@ -1493,7 +1493,7 @@
                                     <div class="module-item-label">System Settings</div>
                                     <div class="module-item-copy">Reserved for future admin-level system controls.</div>
                                 </div>
-                                <span class="btn-secondary btn-disabled">Pending</span>
+                                <a href="{% url 'system_settings' %}" class="btn-secondary">Open</a>
                             </li>
                         </ul>
                     </div>

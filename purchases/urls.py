@@ -21,6 +21,11 @@ from .views import (
     post_login_redirect,
     export_accounting_report_csv,
     bulk_export_completed_purchases,
+    admin_utilities,
+    system_settings,
+    manage_users,
+    add_buyer,
+
 )
 
 urlpatterns = [
@@ -112,4 +117,13 @@ urlpatterns = [
         bulk_export_completed_purchases,
         name="bulk_export_completed_purchases",
     ),
+
+    # ========================
+    # ADMIN UTILITIES
+    # ========================
+    path("admin/utilities/", admin_utilities, name="admin_utilities"),
+    path("admin/utilities/users/", manage_users, name="manage_users"),
+    path("admin/utilities/add-buyer/", add_buyer, name="add_buyer"),
+    path("admin/utilities/settings/", system_settings, name="system_settings"),
+
 ]

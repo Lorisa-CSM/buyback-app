@@ -1596,3 +1596,74 @@ def export_accounting_report_csv(request):
         )
 
     return response
+
+@login_required
+def admin_utilities(request):
+    access = get_user_profile_flags(request.user)
+
+    if not can_view_reports(access):
+        messages.error(request, "You do not have permission to access admin utilities.")
+        return redirect("buyer_dashboard")
+
+    return render(request, "purchases/admin_utilities.html", {
+        "access": access,
+        "buyer": access["profile"],
+    })
+
+
+@login_required
+def manage_users(request):
+    access = get_user_profile_flags(request.user)
+
+    if not can_view_reports(access):
+        messages.error(request, "You do not have permission to manage users.")
+        return redirect("admin_utilities")
+
+    return render(request, "purchases/admin_manage_users.html", {
+        "access": access,
+    })
+
+
+@login_required
+def add_buyer(request):
+    access = get_user_profile_flags(request.user)
+
+    if not can_view_reports(access):
+        messages.error(request, "You do not have permission to add buyers.")
+        return redirect("admin_utilities")
+
+    if request.method == "POST":
+        buyer_code = request.POST.get("buyer_code", "").strip().upper()
+        buyer_name = request.POST.get("buyer_name", "").strip()
+
+        if not buyer_code:
+            messages.error(request, "Buyer code is required.")
+            return redirect("add_buyer")
+
+        from .models import BuyerProfile
+
+        BuyerProfile.objects.create(
+            user=None,  # you can wire this later
+            buyer_code=buyer_code,
+            buyer_name=buyer_name,
+        )
+
+        messages.success(request, "Buyer added successfully.")
+        return redirect("admin_utilities")
+
+    return render(request, "purchases/admin_add_buyer.html", {
+        "access": access,
+    })
+
+
+@login_required
+def system_settings(request):
+    access = get_user_profile_flags(request.user)
+
+    if not can_view_reports(access):
+        messages.error(request, "You do not have permission to access system settings.")
+        return redirect("admin_utilities")
+
+    return render(request, "purchases/admin_system_settings.html", {
+        "access": access,
+    })
