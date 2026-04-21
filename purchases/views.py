@@ -1223,7 +1223,6 @@ def export_filtered_finalized_csv(request):
 
 
 @login_required
-@require_POST
 def bulk_export_completed_purchases(request):
     access = get_user_profile_flags(request.user)
 
@@ -1231,35 +1230,41 @@ def bulk_export_completed_purchases(request):
         messages.error(request, "You do not have permission to export purchases.")
         return redirect("buyer_dashboard")
 
-    selected_ids = request.POST.getlist("selected_purchase_ids")
-    action = request.POST.get("bulk_action", "").strip()
-
-    if not selected_ids:
-        messages.error(request, "No completed purchases were selected.")
-        return redirect("admin_dashboard")
+    # SUPPORT BOTH GET (simple export) + POST (selected export)
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("selected_purchase_ids")
+        action = request.POST.get("bulk_action", "").strip()
+    else:
+        selected_ids = []
+        action = "export_all"
 
     purchases = Purchase.objects.filter(
-        id__in=selected_ids,
         workflow_status="finalized"
     ).order_by("-finalized_at", "-created_at")
 
-    if not purchases.exists():
-        messages.error(request, "No valid finalized purchases were found for export.")
-        return redirect("admin_dashboard")
+    # If specific IDs were passed, filter down
+    if selected_ids:
+        purchases = purchases.filter(id__in=selected_ids)
 
-    if action not in {"export_selected", "mark_exported"}:
-        messages.error(request, "Invalid bulk action.")
+    if not purchases.exists():
+        messages.error(request, "No finalized purchases found.")
         return redirect("admin_dashboard")
 
     batch_name = build_export_batch_name()
     export_time = timezone.now()
 
+    # mark exported FIRST (clean + consistent)
     for purchase in purchases:
         purchase.exported_at = export_time
         purchase.exported_by = request.user
         purchase.export_batch_name = batch_name
         purchase.export_count += 1
-        purchase.save(update_fields=["exported_at", "exported_by", "export_batch_name", "export_count"])
+        purchase.save(update_fields=[
+            "exported_at",
+            "exported_by",
+            "export_batch_name",
+            "export_count"
+        ])
 
         log_purchase_edit(
             purchase=purchase,
@@ -1268,13 +1273,7 @@ def bulk_export_completed_purchases(request):
             note=f"Included in bulk export batch {batch_name}.",
         )
 
-    if action == "mark_exported":
-        messages.success(
-            request,
-            f"{purchases.count()} completed purchase(s) marked exported in batch {batch_name}."
-        )
-        return redirect("admin_dashboard")
-
+    # CSV RESPONSE
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="{batch_name}_completed_orders.csv"'
 
