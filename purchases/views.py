@@ -74,11 +74,13 @@ def recalculate_purchase_totals(purchase):
     else:
         purchase.reconciliation_status = "over"
 
-    purchase.save(update_fields=[
-        "allocation_total_amount",
-        "allocation_difference",
-        "reconciliation_status",
-    ])
+    purchase.save(
+        update_fields=[
+            "allocation_total_amount",
+            "allocation_difference",
+            "reconciliation_status",
+        ]
+    )
 
 
 def get_user_profile_flags(user):
@@ -94,7 +96,7 @@ def get_user_profile_flags(user):
 
 
 def can_edit_purchase(access, purchase):
-    return (
+    return bool(
         access["profile"]
         and (
             purchase.buyer_initials == access["buyer_code"]
@@ -130,6 +132,60 @@ def log_purchase_edit(
     )
 
 
+def get_filtered_finalized_purchases_from_request(request):
+    today = timezone.localdate()
+    default_start = today - timedelta(days=30)
+
+    date_from = request.GET.get("date_from") or default_start.isoformat()
+    date_to = request.GET.get("date_to") or today.isoformat()
+    buyer_filter = request.GET.get("buyer", "").strip()
+    location_filter = request.GET.get("location", "").strip()
+    payment_filter = request.GET.get("payment_method", "").strip().lower()
+    export_status = request.GET.get("export_status", "").strip().lower()
+    query = request.GET.get("q", "").strip()
+
+    purchases = Purchase.objects.prefetch_related("items").filter(
+        workflow_status="finalized",
+        finalized_at__date__gte=date_from,
+        finalized_at__date__lte=date_to,
+    ).order_by("-finalized_at", "-created_at")
+
+    if buyer_filter:
+        purchases = purchases.filter(buyer_initials__iexact=buyer_filter)
+
+    if location_filter:
+        purchases = purchases.filter(location__iexact=location_filter)
+
+    if payment_filter:
+        purchases = purchases.filter(
+            Q(payment_method__iexact=payment_filter)
+            | Q(second_payment_method__iexact=payment_filter)
+        )
+
+    if export_status == "exported":
+        purchases = purchases.filter(exported_at__isnull=False)
+    elif export_status == "not_exported":
+        purchases = purchases.filter(exported_at__isnull=True)
+
+    if query:
+        purchases = purchases.filter(
+            Q(isp_number__icontains=query)
+            | Q(seller_first_name__icontains=query)
+            | Q(seller_last_name__icontains=query)
+            | Q(buyer_initials__icontains=query)
+        )
+
+    return purchases, {
+        "date_from": date_from,
+        "date_to": date_to,
+        "buyer_filter": buyer_filter,
+        "location_filter": location_filter,
+        "payment_filter": payment_filter,
+        "export_status": export_status,
+        "query": query,
+    }
+
+
 @login_required
 def purchase_home(request):
     access = get_user_profile_flags(request.user)
@@ -142,7 +198,7 @@ def purchase_home(request):
             if not profile:
                 messages.error(
                     request,
-                    "No buyer profile is assigned to this user. Please contact an administrator."
+                    "No buyer profile is assigned to this user. Please contact an administrator.",
                 )
                 return redirect("resume_purchase")
 
@@ -176,12 +232,14 @@ def purchase_home(request):
 def purchase_detail(request, purchase_id):
     purchase = get_object_or_404(
         Purchase.objects.prefetch_related("items", "edit_logs__edited_by__buyerprofile"),
-        id=purchase_id
+        id=purchase_id,
     )
 
     access = get_user_profile_flags(request.user)
 
-    total_cost = sum((item.line_total_cost or Decimal("0.00")) for item in purchase.items.all())
+    total_cost = sum(
+        (item.line_total_cost or Decimal("0.00")) for item in purchase.items.all()
+    )
     total_retail = sum(
         (item.quantity or 0) * (item.retail_price or Decimal("0.00"))
         for item in purchase.items.all()
@@ -209,22 +267,28 @@ def purchase_detail(request, purchase_id):
         elif log.action == "purchase_finalized":
             log.description = "Finalized purchase"
         elif log.action == "purchase_reopened":
-            log.description = f"Reopened purchase: {log.note}" if log.note else "Reopened purchase"
+            log.description = (
+                f"Reopened purchase: {log.note}" if log.note else "Reopened purchase"
+            )
         elif log.action == "purchase_exported":
             log.description = log.note or "Exported purchase"
         else:
             log.description = log.note or log.action.replace("_", " ").title()
 
-    return render(request, "purchases/purchase_detail.html", {
-        "purchase": purchase,
-        "total_cost": total_cost,
-        "total_retail": total_retail,
-        "total_profit": total_profit,
-        "margin_percent": margin_percent,
-        "buyer": access["profile"],
-        "access": access,
-        "edit_logs": edit_logs,
-    })
+    return render(
+        request,
+        "purchases/purchase_detail.html",
+        {
+            "purchase": purchase,
+            "total_cost": total_cost,
+            "total_retail": total_retail,
+            "total_profit": total_profit,
+            "margin_percent": margin_percent,
+            "buyer": access["profile"],
+            "access": access,
+            "edit_logs": edit_logs,
+        },
+    )
 
 
 @login_required
@@ -236,7 +300,7 @@ def add_purchase_item(request, purchase_id):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("resume_purchase")
 
@@ -274,10 +338,14 @@ def add_purchase_item(request, purchase_id):
     else:
         form = PurchaseItemsForm()
 
-    return render(request, "purchases/add_item.html", {
-        "purchase": purchase,
-        "form": form,
-    })
+    return render(
+        request,
+        "purchases/add_item.html",
+        {
+            "purchase": purchase,
+            "form": form,
+        },
+    )
 
 
 @login_required
@@ -289,7 +357,7 @@ def add_bulk_cards(request, purchase_id):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("resume_purchase")
 
@@ -308,7 +376,7 @@ def add_bulk_cards(request, purchase_id):
 
             retail_price = (total_cost / Decimal("0.65")).quantize(
                 Decimal("0.01"),
-                rounding=ROUND_HALF_UP
+                rounding=ROUND_HALF_UP,
             )
 
             next_seq = get_next_item_sequence(purchase)
@@ -339,17 +407,21 @@ def add_bulk_cards(request, purchase_id):
     else:
         form = BulkCardForm()
 
-    return render(request, "purchases/add_bulk_cards.html", {
-        "purchase": purchase,
-        "form": form,
-    })
+    return render(
+        request,
+        "purchases/add_bulk_cards.html",
+        {
+            "purchase": purchase,
+            "form": form,
+        },
+    )
 
 
 @login_required
 def add_purchase_items_bulk(request, purchase_id):
     purchase = get_object_or_404(
         Purchase.objects.prefetch_related("items"),
-        id=purchase_id
+        id=purchase_id,
     )
     access = get_user_profile_flags(request.user)
     profile = access["profile"]
@@ -357,7 +429,7 @@ def add_purchase_items_bulk(request, purchase_id):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("resume_purchase")
 
@@ -444,14 +516,18 @@ def add_purchase_items_bulk(request, purchase_id):
     total_profit = total_retail - total_cost
     avg_margin = ((total_profit / total_retail) * 100) if total_retail > 0 else None
 
-    return render(request, "purchases/add_items_bulk.html", {
-        "purchase": purchase,
-        "formset": formset,
-        "total_retail": total_retail,
-        "total_cost": total_cost,
-        "total_profit": total_profit,
-        "avg_margin": avg_margin,
-    })
+    return render(
+        request,
+        "purchases/add_items_bulk.html",
+        {
+            "purchase": purchase,
+            "formset": formset,
+            "total_retail": total_retail,
+            "total_cost": total_cost,
+            "total_profit": total_profit,
+            "avg_margin": avg_margin,
+        },
+    )
 
 
 @login_required
@@ -463,7 +539,7 @@ def finalize_purchase(request, purchase_id):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("resume_purchase")
 
@@ -478,7 +554,7 @@ def finalize_purchase(request, purchase_id):
     ):
         purchase.workflow_status = "finalized"
         purchase.finalized_at = timezone.now()
-        purchase.save(update_fields=["workflow_status", "finalized_at", "updated_at"])
+        purchase.save(update_fields=["workflow_status", "finalized_at"])
 
         log_purchase_edit(
             purchase=purchase,
@@ -500,7 +576,7 @@ def delete_purchase_item(request, purchase_id, item_id):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("resume_purchase")
 
@@ -512,7 +588,9 @@ def delete_purchase_item(request, purchase_id, item_id):
         return redirect("purchase_detail", purchase_id=purchase.id)
 
     if request.method == "POST":
-        deleted_item = f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail_price}"
+        deleted_item = (
+            f"{item.title}, qty={item.quantity}, cost={item.unit_cost}, retail ${item.retail_price}"
+        )
         item.delete()
         purchase.refresh_from_db()
         recalculate_purchase_totals(purchase)
@@ -538,7 +616,7 @@ def edit_purchase_item(request, purchase_id, item_id):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("resume_purchase")
 
@@ -590,11 +668,15 @@ def edit_purchase_item(request, purchase_id, item_id):
     else:
         form = PurchaseItemsForm(instance=item)
 
-    return render(request, "purchases/edit_item.html", {
-        "purchase": purchase,
-        "item": item,
-        "form": form,
-    })
+    return render(
+        request,
+        "purchases/edit_item.html",
+        {
+            "purchase": purchase,
+            "item": item,
+            "form": form,
+        },
+    )
 
 
 @login_required
@@ -605,7 +687,7 @@ def resume_purchase(request):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("accounts_login")
 
@@ -615,21 +697,33 @@ def resume_purchase(request):
     if query:
         if access["can_view_reports"]:
             purchases = (
-                Purchase.objects.filter(isp_number__icontains=query) |
-                Purchase.objects.filter(seller_last_name__icontains=query) |
-                Purchase.objects.filter(seller_first_name__icontains=query)
+                Purchase.objects.filter(isp_number__icontains=query)
+                | Purchase.objects.filter(seller_last_name__icontains=query)
+                | Purchase.objects.filter(seller_first_name__icontains=query)
             ).distinct().order_by("-created_at")
         else:
             purchases = (
-                Purchase.objects.filter(buyer_initials=access["buyer_code"], isp_number__icontains=query) |
-                Purchase.objects.filter(buyer_initials=access["buyer_code"], seller_last_name__icontains=query) |
-                Purchase.objects.filter(buyer_initials=access["buyer_code"], seller_first_name__icontains=query)
+                Purchase.objects.filter(
+                    buyer_initials=access["buyer_code"], isp_number__icontains=query
+                )
+                | Purchase.objects.filter(
+                    buyer_initials=access["buyer_code"],
+                    seller_last_name__icontains=query,
+                )
+                | Purchase.objects.filter(
+                    buyer_initials=access["buyer_code"],
+                    seller_first_name__icontains=query,
+                )
             ).distinct().order_by("-created_at")
 
-    return render(request, "purchases/resume_purchase.html", {
-        "query": query,
-        "purchases": purchases,
-    })
+    return render(
+        request,
+        "purchases/resume_purchase.html",
+        {
+            "query": query,
+            "purchases": purchases,
+        },
+    )
 
 
 @login_required
@@ -641,7 +735,7 @@ def edit_purchase_header(request, purchase_id):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("resume_purchase")
 
@@ -692,10 +786,14 @@ def edit_purchase_header(request, purchase_id):
     else:
         form = PurchaseForm(instance=purchase, user=request.user)
 
-    return render(request, "purchases/edit_purchase_header.html", {
-        "purchase": purchase,
-        "form": form,
-    })
+    return render(
+        request,
+        "purchases/edit_purchase_header.html",
+        {
+            "purchase": purchase,
+            "form": form,
+        },
+    )
 
 
 @login_required
@@ -706,7 +804,7 @@ def buyer_dashboard(request):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("accounts_login")
 
@@ -714,15 +812,17 @@ def buyer_dashboard(request):
     status_filter = request.GET.get("status", "all").strip().lower()
     buyer_code = access["buyer_code"]
 
-    purchases = Purchase.objects.filter(
-        buyer_initials=buyer_code
-    ).prefetch_related("items").order_by("-created_at")
+    purchases = (
+        Purchase.objects.filter(buyer_initials=buyer_code)
+        .prefetch_related("items")
+        .order_by("-created_at")
+    )
 
     if query:
         purchases = (
-            purchases.filter(isp_number__icontains=query) |
-            purchases.filter(seller_last_name__icontains=query) |
-            purchases.filter(seller_first_name__icontains=query)
+            purchases.filter(isp_number__icontains=query)
+            | purchases.filter(seller_last_name__icontains=query)
+            | purchases.filter(seller_first_name__icontains=query)
         ).distinct().order_by("-created_at")
 
     all_needs_attention_purchases = purchases.filter(
@@ -731,16 +831,14 @@ def buyer_dashboard(request):
 
     all_draft_purchases = purchases.filter(
         workflow_status="draft",
-        reconciliation_status="balanced"
+        reconciliation_status="balanced",
     ).order_by("-created_at")
 
     all_finalized_purchases = purchases.filter(
         workflow_status="finalized"
     ).order_by("-created_at")
 
-    all_draft_kpi_purchases = purchases.filter(
-        workflow_status="draft"
-    )
+    all_draft_kpi_purchases = purchases.filter(workflow_status="draft")
 
     total_purchases = purchases.count()
     draft_purchases_count = all_draft_kpi_purchases.count()
@@ -750,7 +848,7 @@ def buyer_dashboard(request):
     cutoff = timezone.now() - timedelta(days=30)
     finalized_last_30 = all_finalized_purchases.filter(
         finalized_at__isnull=False,
-        finalized_at__gte=cutoff
+        finalized_at__gte=cutoff,
     )
 
     total_revenue_30d = Decimal("0.00")
@@ -788,20 +886,24 @@ def buyer_dashboard(request):
         finalized_purchases = all_finalized_purchases
         needs_attention_purchases = all_needs_attention_purchases
 
-    return render(request, "purchases/dashboard.html", {
-        "query": query,
-        "status_filter": status_filter,
-        "draft_purchases": draft_purchases,
-        "finalized_purchases": finalized_purchases,
-        "needs_attention_purchases": needs_attention_purchases,
-        "total_purchases": total_purchases,
-        "draft_purchases_count": draft_purchases_count,
-        "finalized_purchases_count": finalized_purchases_count,
-        "needs_attention_count": needs_attention_count,
-        "avg_margin_30d": avg_margin_30d,
-        "buyer": profile,
-        "access": access,
-    })
+    return render(
+        request,
+        "purchases/dashboard.html",
+        {
+            "query": query,
+            "status_filter": status_filter,
+            "draft_purchases": draft_purchases,
+            "finalized_purchases": finalized_purchases,
+            "needs_attention_purchases": needs_attention_purchases,
+            "total_purchases": total_purchases,
+            "draft_purchases_count": draft_purchases_count,
+            "finalized_purchases_count": finalized_purchases_count,
+            "needs_attention_count": needs_attention_count,
+            "avg_margin_30d": avg_margin_30d,
+            "buyer": profile,
+            "access": access,
+        },
+    )
 
 
 @login_required
@@ -822,7 +924,7 @@ def admin_dashboard(request):
     if not profile:
         messages.error(
             request,
-            "No buyer profile is assigned to this user. Please contact an administrator."
+            "No buyer profile is assigned to this user. Please contact an administrator.",
         )
         return redirect("accounts_login")
 
@@ -842,10 +944,15 @@ def admin_dashboard(request):
     export_status = request.GET.get("export_status", "").strip().lower()
     query = request.GET.get("q", "").strip()
 
-    purchases = Purchase.objects.prefetch_related("items").select_related("exported_by").filter(
-        created_at__date__gte=date_from,
-        created_at__date__lte=date_to,
-    ).order_by("-created_at")
+    purchases = (
+        Purchase.objects.prefetch_related("items")
+        .select_related("exported_by")
+        .filter(
+            created_at__date__gte=date_from,
+            created_at__date__lte=date_to,
+        )
+        .order_by("-created_at")
+    )
 
     if buyer_filter:
         purchases = purchases.filter(buyer_initials__iexact=buyer_filter)
@@ -862,7 +969,8 @@ def admin_dashboard(request):
 
     if payment_filter:
         purchases = purchases.filter(
-            Q(payment_method__iexact=payment_filter) | Q(second_payment_method__iexact=payment_filter)
+            Q(payment_method__iexact=payment_filter)
+            | Q(second_payment_method__iexact=payment_filter)
         )
 
     if export_status == "exported":
@@ -872,10 +980,10 @@ def admin_dashboard(request):
 
     if query:
         purchases = purchases.filter(
-            Q(isp_number__icontains=query) |
-            Q(seller_first_name__icontains=query) |
-            Q(seller_last_name__icontains=query) |
-            Q(buyer_initials__icontains=query)
+            Q(isp_number__icontains=query)
+            | Q(seller_first_name__icontains=query)
+            | Q(seller_last_name__icontains=query)
+            | Q(buyer_initials__icontains=query)
         )
 
     all_purchases = purchases.order_by("-created_at")
@@ -886,7 +994,7 @@ def admin_dashboard(request):
 
     in_progress_purchases = all_purchases.filter(
         workflow_status="draft",
-        reconciliation_status="balanced"
+        reconciliation_status="balanced",
     )
 
     completed_purchases = all_purchases.filter(
@@ -932,6 +1040,7 @@ def admin_dashboard(request):
     if finalized_with_dates.exists():
         total_seconds = 0
         total_records = 0
+
         for purchase in finalized_with_dates:
             delta = purchase.finalized_at - purchase.created_at
             total_seconds += delta.total_seconds()
@@ -953,7 +1062,9 @@ def admin_dashboard(request):
             }
 
         buyer_summary[buyer_code]["purchase_count"] += 1
-        buyer_summary[buyer_code]["purchase_total"] += purchase.purchase_total_amount or Decimal("0.00")
+        buyer_summary[buyer_code]["purchase_total"] += (
+            purchase.purchase_total_amount or Decimal("0.00")
+        )
 
         for item in purchase.items.all():
             qty = item.quantity or 0
@@ -971,12 +1082,14 @@ def admin_dashboard(request):
             margin = ((revenue - cost) / revenue) * 100
             margin = f"{margin:.1f}%"
 
-        buyer_summary_rows.append({
-            "buyer_code": row["buyer_code"],
-            "purchase_count": row["purchase_count"],
-            "purchase_total": row["purchase_total"],
-            "avg_margin": margin,
-        })
+        buyer_summary_rows.append(
+            {
+                "buyer_code": row["buyer_code"],
+                "purchase_count": row["purchase_count"],
+                "purchase_total": row["purchase_total"],
+                "avg_margin": margin,
+            }
+        )
 
     buyer_summary_rows.sort(key=lambda x: x["purchase_count"], reverse=True)
 
@@ -993,7 +1106,9 @@ def admin_dashboard(request):
             }
 
         location_summary[location]["purchase_count"] += 1
-        location_summary[location]["purchase_total"] += purchase.purchase_total_amount or Decimal("0.00")
+        location_summary[location]["purchase_total"] += (
+            purchase.purchase_total_amount or Decimal("0.00")
+        )
 
         for item in purchase.items.all():
             qty = item.quantity or 0
@@ -1011,46 +1126,60 @@ def admin_dashboard(request):
             margin = ((revenue - cost) / revenue) * 100
             margin = f"{margin:.1f}%"
 
-        location_summary_rows.append({
-            "location": row["location"],
-            "purchase_count": row["purchase_count"],
-            "purchase_total": row["purchase_total"],
-            "avg_margin": margin,
-        })
+        location_summary_rows.append(
+            {
+                "location": row["location"],
+                "purchase_count": row["purchase_count"],
+                "purchase_total": row["purchase_total"],
+                "avg_margin": margin,
+            }
+        )
 
     location_summary_rows.sort(key=lambda x: x["purchase_count"], reverse=True)
 
-    buyer_choices = Purchase.objects.values_list("buyer_initials", flat=True).distinct().order_by("buyer_initials")
-    location_choices = Purchase.objects.values_list("location", flat=True).distinct().order_by("location")
+    buyer_choices = (
+        Purchase.objects.values_list("buyer_initials", flat=True)
+        .distinct()
+        .order_by("buyer_initials")
+    )
+    location_choices = (
+        Purchase.objects.values_list("location", flat=True)
+        .distinct()
+        .order_by("location")
+    )
 
-    return render(request, "purchases/admin_dashboard.html", {
-        "buyer": profile,
-        "access": access,
-        "date_from": date_from,
-        "date_to": date_to,
-        "buyer_filter": buyer_filter,
-        "location_filter": location_filter,
-        "status_filter": status_filter,
-        "payment_filter": payment_filter,
-        "query": query,
-        "all_purchases": all_purchases,
-        "fix_required_purchases": fix_required_purchases,
-        "in_progress_purchases": in_progress_purchases,
-        "completed_purchases": completed_purchases,
-        "total_purchases": total_purchases,
-        "fix_required_count": fix_required_count,
-        "in_progress_count": in_progress_count,
-        "completed_count": completed_count,
-        "total_purchase_amount": total_purchase_amount,
-        "avg_margin": avg_margin,
-        "buyer_summary_rows": buyer_summary_rows,
-        "location_summary_rows": location_summary_rows,
-        "buyer_choices": buyer_choices,
-        "location_choices": location_choices,
-        "export_status": export_status,
-        "completed_exported_pct": completed_exported_pct,
-        "avg_finalize_days": avg_finalize_days,
-    })
+    return render(
+        request,
+        "purchases/admin_dashboard.html",
+        {
+            "buyer": profile,
+            "access": access,
+            "date_from": date_from,
+            "date_to": date_to,
+            "buyer_filter": buyer_filter,
+            "location_filter": location_filter,
+            "status_filter": status_filter,
+            "payment_filter": payment_filter,
+            "query": query,
+            "all_purchases": all_purchases,
+            "fix_required_purchases": fix_required_purchases,
+            "in_progress_purchases": in_progress_purchases,
+            "completed_purchases": completed_purchases,
+            "total_purchases": total_purchases,
+            "fix_required_count": fix_required_count,
+            "in_progress_count": in_progress_count,
+            "completed_count": completed_count,
+            "total_purchase_amount": total_purchase_amount,
+            "avg_margin": avg_margin,
+            "buyer_summary_rows": buyer_summary_rows,
+            "location_summary_rows": location_summary_rows,
+            "buyer_choices": buyer_choices,
+            "location_choices": location_choices,
+            "export_status": export_status,
+            "completed_exported_pct": completed_exported_pct,
+            "avg_finalize_days": avg_finalize_days,
+        },
+    )
 
 
 @login_required
@@ -1061,7 +1190,10 @@ def export_purchase_csv(request, purchase_id):
         messages.error(request, "You do not have permission to export purchases.")
         return redirect("buyer_dashboard")
 
-    purchase = get_object_or_404(Purchase.objects.prefetch_related("items"), id=purchase_id)
+    purchase = get_object_or_404(
+        Purchase.objects.prefetch_related("items"),
+        id=purchase_id,
+    )
 
     if purchase.workflow_status != "finalized":
         return redirect("purchase_detail", purchase_id=purchase.id)
@@ -1075,19 +1207,23 @@ def export_purchase_csv(request, purchase_id):
     writer.writerow(["Title", "SKU", "Qty", "Cost", "Retail Price"])
 
     for item in purchase.items.all():
-        writer.writerow([
-            item.title,
-            item.sku,
-            item.quantity,
-            item.unit_cost,
-            item.retail_price,
-        ])
+        writer.writerow(
+            [
+                item.title,
+                item.sku,
+                item.quantity,
+                item.unit_cost,
+                item.retail_price,
+            ]
+        )
 
     purchase.exported_at = timezone.now()
     purchase.exported_by = request.user
     purchase.export_batch_name = batch_name
     purchase.export_count += 1
-    purchase.save(update_fields=["exported_at", "exported_by", "export_batch_name", "export_count"])
+    purchase.save(
+        update_fields=["exported_at", "exported_by", "export_batch_name", "export_count"]
+    )
 
     log_purchase_edit(
         purchase=purchase,
@@ -1107,97 +1243,64 @@ def export_filtered_finalized_csv(request):
         messages.error(request, "You do not have permission to export purchases.")
         return redirect("buyer_dashboard")
 
-    today = timezone.localdate()
-    default_start = today - timedelta(days=30)
-
-    date_from = request.GET.get("date_from") or default_start.isoformat()
-    date_to = request.GET.get("date_to") or today.isoformat()
-    buyer_filter = request.GET.get("buyer", "").strip()
-    location_filter = request.GET.get("location", "").strip()
-    payment_filter = request.GET.get("payment_method", "").strip().lower()
-    export_status = request.GET.get("export_status", "").strip().lower()
-    query = request.GET.get("q", "").strip()
-
-    purchases = Purchase.objects.prefetch_related("items").filter(
-        workflow_status="finalized",
-        finalized_at__date__gte=date_from,
-        finalized_at__date__lte=date_to,
-    ).order_by("-finalized_at", "-created_at")
-
-    if buyer_filter:
-        purchases = purchases.filter(buyer_initials__iexact=buyer_filter)
-
-    if location_filter:
-        purchases = purchases.filter(location__iexact=location_filter)
-
-    if payment_filter:
-        purchases = purchases.filter(
-            Q(payment_method__iexact=payment_filter) |
-            Q(second_payment_method__iexact=payment_filter)
-        )
-
-    if export_status == "exported":
-        purchases = purchases.filter(exported_at__isnull=False)
-    elif export_status == "not_exported":
-        purchases = purchases.filter(exported_at__isnull=True)
-
-    if query:
-        purchases = purchases.filter(
-            Q(isp_number__icontains=query) |
-            Q(seller_first_name__icontains=query) |
-            Q(seller_last_name__icontains=query) |
-            Q(buyer_initials__icontains=query)
-        )
-
+    purchases, filters = get_filtered_finalized_purchases_from_request(request)
     batch_name = build_export_batch_name()
 
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="finalized_purchases_export_{batch_name}.csv"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="finalized_purchases_export_{batch_name}.csv"'
+    )
 
     writer = csv.writer(response)
-    writer.writerow([
-        "ISP Number",
-        "Finalized Date",
-        "Buyer",
-        "Location",
-        "Seller First Name",
-        "Seller Last Name",
-        "SKU",
-        "Title",
-        "Quantity",
-        "Unit Cost",
-        "Retail Price",
-        "Line Total Cost",
-        "Primary Payment Method",
-        "Primary Payment Amount",
-        "Second Payment Method",
-        "Second Payment Amount",
-        "Export Batch Name",
-    ])
+    writer.writerow(
+        [
+            "ISP Number",
+            "Finalized Date",
+            "Buyer",
+            "Location",
+            "Seller First Name",
+            "Seller Last Name",
+            "SKU",
+            "Title",
+            "Quantity",
+            "Unit Cost",
+            "Retail Price",
+            "Line Total Cost",
+            "Primary Payment Method",
+            "Primary Payment Amount",
+            "Second Payment Method",
+            "Second Payment Amount",
+            "Export Batch Name",
+        ]
+    )
 
     exported_purchase_ids = []
 
     for purchase in purchases:
         for item in purchase.items.all():
-            writer.writerow([
-                purchase.isp_number,
-                timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %H:%M") if purchase.finalized_at else "",
-                purchase.buyer_initials,
-                purchase.location,
-                purchase.seller_first_name,
-                purchase.seller_last_name,
-                item.sku,
-                item.title,
-                item.quantity,
-                item.unit_cost,
-                item.retail_price,
-                item.line_total_cost,
-                purchase.payment_method,
-                purchase.primary_payment_amount,
-                purchase.second_payment_method,
-                purchase.second_payment_amount,
-                batch_name,
-            ])
+            writer.writerow(
+                [
+                    purchase.isp_number,
+                    timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %H:%M")
+                    if purchase.finalized_at
+                    else "",
+                    purchase.buyer_initials,
+                    purchase.location,
+                    purchase.seller_first_name,
+                    purchase.seller_last_name,
+                    item.sku,
+                    item.title,
+                    item.quantity,
+                    item.unit_cost,
+                    item.retail_price,
+                    item.line_total_cost,
+                    purchase.payment_method,
+                    purchase.primary_payment_amount,
+                    purchase.second_payment_method,
+                    purchase.second_payment_amount,
+                    batch_name,
+                ]
+            )
 
         exported_purchase_ids.append(purchase.id)
 
@@ -1230,21 +1333,14 @@ def bulk_export_completed_purchases(request):
         messages.error(request, "You do not have permission to export purchases.")
         return redirect("buyer_dashboard")
 
-    # SUPPORT BOTH GET (simple export) + POST (selected export)
     if request.method == "POST":
         selected_ids = request.POST.getlist("selected_purchase_ids")
-        action = request.POST.get("bulk_action", "").strip()
+        purchases = Purchase.objects.prefetch_related("items").filter(
+            id__in=selected_ids,
+            workflow_status="finalized",
+        ).order_by("-finalized_at", "-created_at")
     else:
-        selected_ids = []
-        action = "export_all"
-
-    purchases = Purchase.objects.filter(
-        workflow_status="finalized"
-    ).order_by("-finalized_at", "-created_at")
-
-    # If specific IDs were passed, filter down
-    if selected_ids:
-        purchases = purchases.filter(id__in=selected_ids)
+        purchases, _ = get_filtered_finalized_purchases_from_request(request)
 
     if not purchases.exists():
         messages.error(request, "No finalized purchases found.")
@@ -1253,59 +1349,68 @@ def bulk_export_completed_purchases(request):
     batch_name = build_export_batch_name()
     export_time = timezone.now()
 
-    # mark exported FIRST (clean + consistent)
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        f'attachment; filename="{batch_name}_finalized_order_products.csv"'
+    )
+
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "Product Name",
+            "Product Category",
+            "Product Description",
+            "Variant Name",
+            "SKU",
+            "Barcode",
+            "Price",
+            "Default Cost",
+            "Active/Inactive",
+            "Reorder Point",
+            "Reorder Target",
+            "Vendor",
+        ]
+    )
+
+    for purchase in purchases:
+        for item in purchase.items.all():
+            writer.writerow(
+                [
+                    item.title or "",
+                    "",
+                    "",
+                    "",
+                    item.sku or "",
+                    "",
+                    item.retail_price or Decimal("0.00"),
+                    item.unit_cost or Decimal("0.00"),
+                    "inactive",
+                    "",
+                    "",
+                    "In-Store Purchase",
+                ]
+            )
+
     for purchase in purchases:
         purchase.exported_at = export_time
         purchase.exported_by = request.user
         purchase.export_batch_name = batch_name
         purchase.export_count += 1
-        purchase.save(update_fields=[
-            "exported_at",
-            "exported_by",
-            "export_batch_name",
-            "export_count"
-        ])
+        purchase.save(
+            update_fields=[
+                "exported_at",
+                "exported_by",
+                "export_batch_name",
+                "export_count",
+            ]
+        )
 
         log_purchase_edit(
             purchase=purchase,
             user=request.user,
             action="purchase_exported",
-            note=f"Included in bulk export batch {batch_name}.",
+            note=f"Included in bulk product export batch {batch_name}.",
         )
-
-    # CSV RESPONSE
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="{batch_name}_completed_orders.csv"'
-
-    writer = csv.writer(response)
-    writer.writerow([
-        "ISP Number",
-        "Finalized Date",
-        "Location",
-        "Seller First Name",
-        "Seller Last Name",
-        "Purchase Total Amount",
-        "Primary Payment Method",
-        "Primary Payment Amount",
-        "Second Payment Method",
-        "Second Payment Amount",
-        "Export Batch",
-    ])
-
-    for purchase in purchases:
-        writer.writerow([
-            purchase.isp_number,
-            timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %H:%M") if purchase.finalized_at else "",
-            purchase.location,
-            purchase.seller_first_name,
-            purchase.seller_last_name,
-            purchase.purchase_total_amount,
-            purchase.payment_method,
-            purchase.primary_payment_amount,
-            purchase.second_payment_method,
-            purchase.second_payment_amount,
-            batch_name,
-        ])
 
     return response
 
@@ -1331,14 +1436,15 @@ def reopen_purchase(request, purchase_id):
         purchase.reopened_at = timezone.now()
         purchase.reopened_by = request.user
         purchase.reopen_reason = reopen_reason
-        purchase.save(update_fields=[
-            "workflow_status",
-            "finalized_at",
-            "reopened_at",
-            "reopened_by",
-            "reopen_reason",
-            "updated_at",
-        ])
+        purchase.save(
+            update_fields=[
+                "workflow_status",
+                "finalized_at",
+                "reopened_at",
+                "reopened_by",
+                "reopen_reason",
+            ]
+        )
 
         log_purchase_edit(
             purchase=purchase,
@@ -1363,11 +1469,15 @@ def download_purchase_order(request, purchase_id):
     if purchase.workflow_status != "finalized":
         return redirect("purchase_detail", purchase_id=purchase.id)
 
-    return render(request, "purchases/download_purchase_order.html", {
-        "purchase": purchase,
-        "buyer": access["profile"],
-        "access": access,
-    })
+    return render(
+        request,
+        "purchases/download_purchase_order.html",
+        {
+            "purchase": purchase,
+            "buyer": access["profile"],
+            "access": access,
+        },
+    )
 
 
 @login_required
@@ -1393,29 +1503,31 @@ def export_accounting_report_csv(request):
 
     if payment_filter:
         purchases = purchases.filter(
-            Q(payment_method__iexact=payment_filter) |
-            Q(second_payment_method__iexact=payment_filter)
+            Q(payment_method__iexact=payment_filter)
+            | Q(second_payment_method__iexact=payment_filter)
         )
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="accounting_report.csv"'
 
     writer = csv.writer(response)
-    writer.writerow([
-        "Date/Time Finalized",
-        "ISP #",
-        "Location",
-        "Seller First Name",
-        "Seller Last Name",
-        "Order Total",
-        "Paid via Cash",
-        "Paid via Check",
-        "Check #",
-        "Paid via Gift Card",
-        "Gift Card #",
-        "Paid via Other",
-        "Other Explained",
-    ])
+    writer.writerow(
+        [
+            "Date/Time Finalized",
+            "ISP #",
+            "Location",
+            "Seller First Name",
+            "Seller Last Name",
+            "Order Total",
+            "Paid via Cash",
+            "Paid via Check",
+            "Check #",
+            "Paid via Gift Card",
+            "Gift Card #",
+            "Paid via Other",
+            "Other Explained",
+        ]
+    )
 
     for purchase in purchases:
         cash_amount = Decimal("0.00")
@@ -1457,24 +1569,30 @@ def export_accounting_report_csv(request):
         elif payment_2:
             other_amount += amount_2
             if other_explained:
-                other_explained = f"{other_explained}; {purchase.second_payment_other_reason or payment_2}"
+                other_explained = (
+                    f"{other_explained}; {purchase.second_payment_other_reason or payment_2}"
+                )
             else:
                 other_explained = purchase.second_payment_other_reason or payment_2
 
-        writer.writerow([
-            timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %I:%M %p") if purchase.finalized_at else "",
-            purchase.isp_number,
-            purchase.location,
-            purchase.seller_first_name,
-            purchase.seller_last_name,
-            purchase.purchase_total_amount or Decimal("0.00"),
-            cash_amount,
-            check_amount,
-            check_number,
-            gift_card_amount,
-            gift_card_number,
-            other_amount,
-            other_explained,
-        ])
+        writer.writerow(
+            [
+                timezone.localtime(purchase.finalized_at).strftime("%Y-%m-%d %I:%M %p")
+                if purchase.finalized_at
+                else "",
+                purchase.isp_number,
+                purchase.location,
+                purchase.seller_first_name,
+                purchase.seller_last_name,
+                purchase.purchase_total_amount or Decimal("0.00"),
+                cash_amount,
+                check_amount,
+                check_number,
+                gift_card_amount,
+                gift_card_number,
+                other_amount,
+                other_explained,
+            ]
+        )
 
     return response

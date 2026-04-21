@@ -24,15 +24,11 @@ from .views import (
 )
 
 urlpatterns = [
-    # ========================
-    # CORE NAVIGATION
-    # ========================
+    # Core navigation
     path("", buyer_dashboard, name="buyer_dashboard"),
     path("admin-dashboard/", admin_dashboard, name="admin_dashboard"),
 
-    # ========================
-    # AUTH
-    # ========================
+    # Auth
     path(
         "accounts/login/",
         auth_views.LoginView.as_view(template_name="registration/login.html"),
@@ -45,13 +41,10 @@ urlpatterns = [
     ),
     path("post-login/", post_login_redirect, name="post_login_redirect"),
 
-    # ========================
-    # PURCHASE FLOW
-    # ========================
+    # Purchase flow
     path("purchase/new/", purchase_home, name="purchase_home"),
     path("resume/", resume_purchase, name="resume_purchase"),
     path("purchase/<int:purchase_id>/", purchase_detail, name="purchase_detail"),
-
     path(
         "purchase/<int:purchase_id>/add-item/",
         add_purchase_item,
@@ -67,7 +60,6 @@ urlpatterns = [
         add_bulk_cards,
         name="add_bulk_cards",
     ),
-
     path(
         "purchase/<int:purchase_id>/finalize/",
         finalize_purchase,
@@ -78,7 +70,6 @@ urlpatterns = [
         reopen_purchase,
         name="reopen_purchase",
     ),
-
     path(
         "purchase/<int:purchase_id>/delete-item/<int:item_id>/",
         delete_purchase_item,
@@ -100,9 +91,7 @@ urlpatterns = [
         name="download_purchase_order",
     ),
 
-    # ========================
-    # EXPORTS (ADMIN ONLY)
-    # ========================
+    # Exports (admin only)
     path(
         "exports/finalized-orders/",
         export_filtered_finalized_csv,

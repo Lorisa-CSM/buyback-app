@@ -55,7 +55,7 @@
     .admin-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: center;
         gap: 20px;
         background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
         border: 1px solid var(--border);
@@ -97,7 +97,9 @@
     .btn-secondary,
     .btn-ghost,
     .mini-action,
-    .admin-tools-toggle {
+    .admin-tools-toggle,
+    .tab-button,
+    .bulk-action-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -114,13 +116,15 @@
         box-sizing: border-box;
     }
 
-    .btn-primary {
+    .btn-primary,
+    .bulk-action-btn.primary {
         background: linear-gradient(180deg, var(--brand-navy-2) 0%, var(--brand-navy) 100%);
         color: #fff;
         box-shadow: 0 8px 18px rgba(0, 45, 98, 0.14);
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover,
+    .bulk-action-btn.primary:hover {
         transform: translateY(-1px);
         box-shadow: 0 12px 24px rgba(0, 45, 98, 0.18);
         color: #fff;
@@ -129,7 +133,8 @@
 
     .btn-secondary,
     .admin-tools-toggle,
-    .mini-action {
+    .mini-action,
+    .bulk-action-btn.secondary {
         background: #fff;
         color: var(--text-main);
         border-color: var(--border);
@@ -138,7 +143,8 @@
 
     .btn-secondary:hover,
     .admin-tools-toggle:hover,
-    .mini-action:hover {
+    .mini-action:hover,
+    .bulk-action-btn.secondary:hover {
         background: #f8fbff;
         color: var(--text-main);
         text-decoration: none;
@@ -207,14 +213,14 @@
         position: absolute;
         right: 0;
         top: calc(100% + 10px);
-        min-width: 300px;
+        min-width: 320px;
         background: #fff;
         border: 1px solid var(--border);
         border-radius: 16px;
         box-shadow: var(--shadow-md);
         padding: 10px;
         display: none;
-        z-index: 20;
+        z-index: 30;
     }
 
     .tools-group {
@@ -288,7 +294,7 @@
         border-radius: 18px;
         box-shadow: var(--shadow-xs);
         padding: 20px 20px 18px;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         color: inherit;
     }
 
@@ -514,6 +520,38 @@
         color: var(--text-soft);
     }
 
+    .bulk-toolbar {
+        margin-bottom: 14px;
+        padding: 14px;
+        border: 1px solid var(--border-soft);
+        border-radius: 14px;
+        background: var(--surface-soft);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .bulk-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .bulk-toolbar-copy {
+        color: var(--text-soft);
+        font-size: 0.84rem;
+        font-weight: 600;
+    }
+
+    .bulk-toolbar-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
     .table-wrap {
         overflow-x: auto;
         border: 1px solid var(--border-soft);
@@ -557,13 +595,26 @@
         white-space: nowrap;
     }
 
-    .admin-table tbody tr {
+    .admin-table tbody tr.clickable-row {
         cursor: pointer;
         transition: background 0.15s ease;
     }
 
-    .admin-table tbody tr:hover td {
+    .admin-table tbody tr.clickable-row:hover td {
         background: #f4f7fb;
+    }
+
+    .select-col {
+        width: 52px;
+        min-width: 52px;
+        text-align: center !important;
+    }
+
+    .select-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--brand-navy);
     }
 
     .cell-strong {
@@ -609,7 +660,6 @@
     .pill-draft { background: rgba(0, 45, 98, 0.08); color: var(--brand-navy); }
     .pill-exported { background: #ecfdf3; color: #027a48; }
     .pill-ready { background: #fff7e6; color: #b54708; }
-    .pill-ineligible { background: #f2f4f7; color: #475467; }
 
     .action-cell {
         width: 1%;
@@ -680,10 +730,9 @@
         margin-top: 2px;
     }
 
-    /* Completed table only */
     .completed-table {
         width: 100%;
-        min-width: 1080px;
+        min-width: 1180px;
         table-layout: fixed;
     }
 
@@ -706,22 +755,16 @@
         line-height: 1.3;
     }
 
-    .completed-table .col-isp { width: 15%; }
-    .completed-table .col-location { width: 11%; }
-    .completed-table .col-seller { width: 16%; }
-    .completed-table .col-money { width: 12%; }
-    .completed-table .col-status { width: 10%; }
+    .completed-table .col-select { width: 5%; }
+    .completed-table .col-isp { width: 14%; }
+    .completed-table .col-location { width: 10%; }
+    .completed-table .col-seller { width: 15%; }
+    .completed-table .col-money { width: 11%; }
+    .completed-table .col-status { width: 9%; }
     .completed-table .col-date { width: 11%; }
     .completed-table .col-export-status { width: 12%; }
     .completed-table .col-exported-at { width: 13%; }
     .completed-table .col-exported-by { width: 10%; }
-
-    .completed-table .seller-cell {
-        max-width: none;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
 
     .completed-table td.col-money,
     .completed-table th.col-money {
@@ -806,12 +849,14 @@
         .btn-primary,
         .btn-secondary,
         .tab-button,
-        .admin-tools-toggle {
+        .admin-tools-toggle,
+        .bulk-action-btn {
             width: 100%;
         }
 
         .admin-header-right,
-        .toolbar-actions {
+        .toolbar-actions,
+        .bulk-toolbar-actions {
             width: 100%;
         }
 
@@ -837,9 +882,10 @@
                     Manage purchases, workflow, users, and system operations.
                 </p>
             </div>
+
             <div class="admin-header-right">
                 {% if access.can_edit_all_purchases %}
-                    <a href="#" class="btn-primary btn-disabled">Add Buyer</a>
+                    <span class="btn-primary btn-disabled">Add Buyer</span>
 
                     <div class="admin-tools" id="adminTools">
                         <button type="button" class="admin-tools-toggle" id="adminToolsToggle">
@@ -850,19 +896,20 @@
                         <div class="admin-tools-menu" id="adminToolsMenu">
                             <div class="tools-group">
                                 <div class="tools-group-label">People</div>
-                                <a href="#" class="tools-link btn-disabled">
+
+                                <span class="tools-link btn-disabled">
                                     <span class="tools-link-text">
                                         <span class="tools-link-title">Add Buyer</span>
-                                        <span class="tools-link-subtitle">Create a new buyer profile</span>
+                                        <span class="tools-link-subtitle">Pending build</span>
                                     </span>
-                                </a>
+                                </span>
 
-                                <a href="#" class="tools-link btn-disabled">
+                                <span class="tools-link btn-disabled">
                                     <span class="tools-link-text">
                                         <span class="tools-link-title">Manage Users</span>
-                                        <span class="tools-link-subtitle">Roles, passwords, and account status</span>
+                                        <span class="tools-link-subtitle">Pending build</span>
                                     </span>
-                                </a>
+                                </span>
                             </div>
 
                             <div class="tools-divider"></div>
@@ -905,12 +952,13 @@
 
                             <div class="tools-group">
                                 <div class="tools-group-label">System</div>
-                                <a href="#" class="tools-link btn-disabled">
+
+                                <span class="tools-link btn-disabled">
                                     <span class="tools-link-text">
                                         <span class="tools-link-title">System Settings</span>
-                                        <span class="tools-link-subtitle">Reserved for future admin controls</span>
+                                        <span class="tools-link-subtitle">Pending build</span>
                                     </span>
-                                </a>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -1027,7 +1075,7 @@
                         <div class="field">
                             <label for="export_status">Export Status</label>
                             <select id="export_status" name="export_status">
-                                <option value="">All</option>
+                                <option value="" {% if not export_status %}selected{% endif %}>All</option>
                                 <option value="not_exported" {% if export_status == "not_exported" %}selected{% endif %}>Not Exported</option>
                                 <option value="exported" {% if export_status == "exported" %}selected{% endif %}>Exported</option>
                             </select>
@@ -1094,7 +1142,7 @@
                                 </thead>
                                 <tbody>
                                     {% for purchase in fix_required_purchases %}
-                                        <tr data-href="{% url 'purchase_detail' purchase.id %}">
+                                        <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
                                             <td class="cell-strong">{{ purchase.isp_number }}</td>
                                             <td>{{ purchase.buyer_initials }}</td>
                                             <td>{{ purchase.location }}</td>
@@ -1171,7 +1219,7 @@
                                 </thead>
                                 <tbody>
                                     {% for purchase in in_progress_purchases %}
-                                        <tr data-href="{% url 'purchase_detail' purchase.id %}">
+                                        <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
                                             <td class="cell-strong">{{ purchase.isp_number }}</td>
                                             <td>{{ purchase.buyer_initials }}</td>
                                             <td>{{ purchase.location }}</td>
@@ -1210,58 +1258,93 @@
                     </div>
 
                     {% if completed_purchases %}
-                        <div class="table-wrap">
-                            <table class="admin-table completed-table">
-                                <thead>
-                                    <tr>
-                                        <th class="col-isp">ISP Number</th>
-                                        <th class="col-location">Location</th>
-                                        <th class="col-seller">Seller</th>
-                                        <th class="col-money">Total Purchase Amount</th>
-                                        <th class="col-status">Status</th>
-                                        <th class="col-date">Created Date</th>
-                                        <th class="col-date">Finalized Date</th>
-                                        <th class="col-export-status">Export Status</th>
-                                        <th class="col-exported-at">Exported At</th>
-                                        <th class="col-exported-by">Exported By</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for purchase in completed_purchases %}
-                                        <tr data-href="{% url 'purchase_detail' purchase.id %}">
-                                            <td class="cell-strong">{{ purchase.isp_number }}</td>
-                                            <td>{{ purchase.location }}</td>
-                                            <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
-                                            <td><span class="status-pill pill-success">Finalized</span></td>
-                                            <td>{{ purchase.created_at|localtime|date:"M j, Y" }}</td>
-                                            <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y" }}{% else %}—{% endif %}</td>
-                                            <td>
-                                                {% if purchase.exported_at %}
-                                                    <span class="status-pill pill-exported">Exported</span>
-                                                {% else %}
-                                                    <span class="status-pill pill-ready">Ready for Export</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if purchase.exported_at %}
-                                                    {{ purchase.exported_at|localtime|date:"M j, Y g:i A" }}
-                                                {% else %}
-                                                    —
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if purchase.exported_by %}
-                                                    {{ purchase.exported_by.username }}
-                                                {% else %}
-                                                    —
-                                                {% endif %}
-                                            </td>
+                        <form method="post" action="{% url 'bulk_export_completed_purchases' %}" id="completedExportForm">
+                            {% csrf_token %}
+
+                            <div class="bulk-toolbar">
+                                <div class="bulk-toolbar-left">
+                                    <label>
+                                        <input type="checkbox" id="selectAllCompleted" class="select-checkbox">
+                                    </label>
+                                    <span class="bulk-toolbar-copy">Select completed purchases for product export.</span>
+                                </div>
+
+                                <div class="bulk-toolbar-actions">
+                                    <a
+                                        href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&payment_method={{ payment_filter|urlencode }}&export_status={{ export_status|urlencode }}&q={{ query|urlencode }}"
+                                        class="bulk-action-btn secondary"
+                                    >
+                                        Export All Filtered Products
+                                    </a>
+
+                                    <button type="submit" name="bulk_action" value="export_selected" class="bulk-action-btn primary">
+                                        Export Selected Products
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="table-wrap">
+                                <table class="admin-table completed-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-select select-col"></th>
+                                            <th class="col-isp">ISP Number</th>
+                                            <th class="col-location">Location</th>
+                                            <th class="col-seller">Seller</th>
+                                            <th class="col-money">Total Purchase Amount</th>
+                                            <th class="col-status">Status</th>
+                                            <th class="col-date">Created Date</th>
+                                            <th class="col-date">Finalized Date</th>
+                                            <th class="col-export-status">Export Status</th>
+                                            <th class="col-exported-at">Exported At</th>
+                                            <th class="col-exported-by">Exported By</th>
                                         </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {% for purchase in completed_purchases %}
+                                            <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
+                                                <td class="select-col" onclick="event.stopPropagation();">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="selected_purchase_ids"
+                                                        value="{{ purchase.id }}"
+                                                        class="select-checkbox completed-checkbox"
+                                                    >
+                                                </td>
+                                                <td class="cell-strong">{{ purchase.isp_number }}</td>
+                                                <td>{{ purchase.location }}</td>
+                                                <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
+                                                <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
+                                                <td><span class="status-pill pill-success">Finalized</span></td>
+                                                <td>{{ purchase.created_at|localtime|date:"M j, Y" }}</td>
+                                                <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y" }}{% else %}—{% endif %}</td>
+                                                <td>
+                                                    {% if purchase.exported_at %}
+                                                        <span class="status-pill pill-exported">Exported</span>
+                                                    {% else %}
+                                                        <span class="status-pill pill-ready">Ready for Export</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if purchase.exported_at %}
+                                                        {{ purchase.exported_at|localtime|date:"M j, Y g:i A" }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if purchase.exported_by %}
+                                                        {{ purchase.exported_by.username }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
                     {% else %}
                         <p class="empty-state">No completed purchases match the current filters.</p>
                     {% endif %}
@@ -1299,7 +1382,7 @@
                                 </thead>
                                 <tbody>
                                     {% for purchase in all_purchases %}
-                                        <tr data-href="{% url 'purchase_detail' purchase.id %}">
+                                        <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
                                             <td class="cell-strong">{{ purchase.isp_number }}</td>
                                             <td>{{ purchase.buyer_initials }}</td>
                                             <td>{{ purchase.location }}</td>
@@ -1505,6 +1588,26 @@
             window.location.href = row.dataset.href;
         });
     });
+
+    const selectAllCompleted = document.getElementById("selectAllCompleted");
+    const completedCheckboxes = document.querySelectorAll(".completed-checkbox");
+
+    if (selectAllCompleted && completedCheckboxes.length) {
+        selectAllCompleted.addEventListener("change", function () {
+            completedCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCompleted.checked;
+            });
+        });
+
+        completedCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener("change", function () {
+                const allChecked = Array.from(completedCheckboxes).every(cb => cb.checked);
+                const anyChecked = Array.from(completedCheckboxes).some(cb => cb.checked);
+                selectAllCompleted.checked = allChecked;
+                selectAllCompleted.indeterminate = anyChecked && !allChecked;
+            });
+        });
+    }
 })();
 </script>
 {% endblock %}
