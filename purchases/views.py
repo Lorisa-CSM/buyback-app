@@ -960,9 +960,9 @@ def admin_dashboard(request):
     if location_filter:
         purchases = purchases.filter(location__iexact=location_filter)
 
-    if status_filter == "fix_required":
+    if status_filter == "fix-required":
         purchases = purchases.filter(reconciliation_status__in=["under", "over"])
-    elif status_filter == "in_progress":
+    elif status_filter == "in-progress":
         purchases = purchases.filter(workflow_status="draft", reconciliation_status="balanced")
     elif status_filter == "completed":
         purchases = purchases.filter(workflow_status="finalized")
@@ -1619,8 +1619,13 @@ def manage_users(request):
         messages.error(request, "You do not have permission to manage users.")
         return redirect("admin_utilities")
 
+    from django.contrib.auth.models import User
+
+    users = User.objects.select_related("buyerprofile").all().order_by("username")
+
     return render(request, "purchases/admin_manage_users.html", {
         "access": access,
+        "users": users,
     })
 
 
@@ -1632,23 +1637,31 @@ def add_buyer(request):
         messages.error(request, "You do not have permission to add buyers.")
         return redirect("admin_utilities")
 
-    if request.method == "POST":
-        buyer_code = request.POST.get("buyer_code", "").strip().upper()
-        buyer_name = request.POST.get("buyer_name", "").strip()
+    from django.contrib.auth.models import User
+    from .models import BuyerProfile
 
-        if not buyer_code:
-            messages.error(request, "Buyer code is required.")
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+
+        if not username:
+            messages.error(request, "Username is required.")
             return redirect("add_buyer")
 
-        from .models import BuyerProfile
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "User already exists.")
+            return redirect("add_buyer")
 
-        BuyerProfile.objects.create(
-            user=None,  # you can wire this later
-            buyer_code=buyer_code,
-            buyer_name=buyer_name,
+        user = User.objects.create_user(
+            username=username,
+            password="changeme123",  # force reset later
+            first_name=first_name,
+            last_name=last_name,
         )
 
-        messages.success(request, "Buyer added successfully.")
+        # BuyerProfile auto-creates via signal
+        messages.success(request, f"Buyer {username} created successfully.")
         return redirect("admin_utilities")
 
     return render(request, "purchases/admin_add_buyer.html", {

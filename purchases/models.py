@@ -1,8 +1,10 @@
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+User = get_user_model()
 
 
 class PurchaseEditLog(models.Model):
@@ -33,7 +35,11 @@ class PurchaseEditLog(models.Model):
 
 
 class BuyerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="buyerprofile",
+    )
     buyer_code = models.CharField(max_length=10, unique=True)
 
     can_view_reports = models.BooleanField(default=False)
@@ -41,7 +47,8 @@ class BuyerProfile(models.Model):
     can_reopen_purchases = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user.username} - {self.buyer_code}"
+        username = getattr(self.user, "username", "Unknown User")
+        return f"{username} - {self.buyer_code}"
 
 
 def generate_unique_buyer_code(user):
@@ -51,7 +58,7 @@ def generate_unique_buyer_code(user):
     base_code = f"{first}{last}".strip()
 
     if not base_code:
-        base_code = user.username[:2].upper()
+        base_code = (user.username[:2] if user.username else "BU").upper()
 
     candidate = base_code
     counter = 2
@@ -64,15 +71,32 @@ def generate_unique_buyer_code(user):
 
 
 @receiver(post_save, sender=User)
-def create_buyer_profile(sender, instance, created, **kwargs):
+def ensure_buyer_profile(sender, instance, created, **kwargs):
     if created:
         BuyerProfile.objects.create(
             user=instance,
-            buyer_code=generate_unique_buyer_code(instance)
+            buyer_code=generate_unique_buyer_code(instance),
         )
+        return
+
+    BuyerProfile.objects.get_or_create(
+        user=instance,
+        defaults={"buyer_code": generate_unique_buyer_code(instance)},
+    )
 
 
 class Purchase(models.Model):
+    RECONCILIATION_STATUS_CHOICES = [
+        ("under", "Under"),
+        ("balanced", "Balanced"),
+        ("over", "Over"),
+    ]
+
+    WORKFLOW_STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("finalized", "Finalized"),
+    ]
+
     isp_number = models.CharField(max_length=20, unique=True)
     buyer_initials = models.CharField(max_length=10)
 
@@ -89,24 +113,46 @@ class Purchase(models.Model):
     drivers_license_number = models.CharField(max_length=50)
 
     location = models.CharField(max_length=20)
+
     purchase_total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     allocation_total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     allocation_difference = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
-    reconciliation_status = models.CharField(max_length=20, default="under")
-    workflow_status = models.CharField(max_length=20, default="draft")
+    reconciliation_status = models.CharField(
+        max_length=20,
+        choices=RECONCILIATION_STATUS_CHOICES,
+        default="under",
+    )
+    workflow_status = models.CharField(
+        max_length=20,
+        choices=WORKFLOW_STATUS_CHOICES,
+        default="draft",
+    )
 
     payment_method = models.CharField(max_length=20)
     check_number = models.CharField(max_length=50, blank=True)
     gift_card_last4 = models.CharField(max_length=4, blank=True)
     payment_other_reason = models.CharField(max_length=255, blank=True)
+
     is_split_payment = models.BooleanField(default=False)
-    primary_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    primary_payment_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
     second_payment_method = models.CharField(max_length=20, blank=True)
     second_check_number = models.CharField(max_length=50, blank=True)
     second_gift_card_last4 = models.CharField(max_length=4, blank=True)
     second_payment_other_reason = models.CharField(max_length=255, blank=True)
-    second_payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    second_payment_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
     payment_notes = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -122,6 +168,7 @@ class Purchase(models.Model):
         related_name="exported_purchases",
     )
     export_batch_name = models.CharField(max_length=50, blank=True, default="")
+    export_count = models.PositiveIntegerField(default=0)
 
     reopened_at = models.DateTimeField(blank=True, null=True)
     reopened_by = models.ForeignKey(
@@ -133,8 +180,6 @@ class Purchase(models.Model):
     )
     reopen_reason = models.TextField(blank=True)
 
-    export_count = models.PositiveIntegerField(default=0)
-
     class Meta:
         indexes = [
             models.Index(fields=["workflow_status"]),
@@ -145,13 +190,18 @@ class Purchase(models.Model):
             models.Index(fields=["buyer_initials"]),
             models.Index(fields=["location"]),
         ]
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.isp_number
 
 
 class PurchaseItem(models.Model):
-    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="items")
+    purchase = models.ForeignKey(
+        Purchase,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
     sku = models.CharField(max_length=30, unique=True)
     title = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField(default=1)
@@ -161,6 +211,9 @@ class PurchaseItem(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return self.sku

@@ -25,13 +25,13 @@ from .views import (
     system_settings,
     manage_users,
     add_buyer,
-
 )
 
 urlpatterns = [
     # Core navigation
     path("", buyer_dashboard, name="buyer_dashboard"),
     path("admin-dashboard/", admin_dashboard, name="admin_dashboard"),
+    path("post-login/", post_login_redirect, name="post_login_redirect"),
 
     # Auth
     path(
@@ -44,7 +44,6 @@ urlpatterns = [
         auth_views.LogoutView.as_view(next_page="accounts_login"),
         name="accounts_logout",
     ),
-    path("post-login/", post_login_redirect, name="post_login_redirect"),
 
     # Purchase flow
     path("purchase/new/", purchase_home, name="purchase_home"),
@@ -96,7 +95,7 @@ urlpatterns = [
         name="download_purchase_order",
     ),
 
-    # Exports (admin only)
+    # Exports
     path(
         "exports/finalized-orders/",
         export_filtered_finalized_csv,
@@ -118,12 +117,9 @@ urlpatterns = [
         name="bulk_export_completed_purchases",
     ),
 
-    # ========================
-    # ADMIN UTILITIES
-    # ========================
+    # Admin utilities
     path("admin/utilities/", admin_utilities, name="admin_utilities"),
     path("admin/utilities/users/", manage_users, name="manage_users"),
     path("admin/utilities/add-buyer/", add_buyer, name="add_buyer"),
     path("admin/utilities/settings/", system_settings, name="system_settings"),
-
 ]

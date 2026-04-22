@@ -1,9 +1,3 @@
-{% extends "base.html" %}
-{% load tz %}
-
-{% block title %}Admin Dashboard{% endblock %}
-
-{% block content %}
 <style>
     :root {
         --brand-navy: #002D62;
@@ -13,7 +7,6 @@
         --page-bg: #f4f7fb;
         --surface: #ffffff;
         --surface-soft: #f8fafc;
-        --surface-tint: #fbfcfe;
 
         --border: #e5ebf3;
         --border-soft: #eef2f7;
@@ -25,21 +18,10 @@
 
         --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
         --shadow-sm: 0 6px 20px rgba(16, 24, 40, 0.06);
-        --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.08);
 
-        --radius-xl: 22px;
         --radius-lg: 18px;
         --radius-md: 14px;
         --radius-sm: 12px;
-
-        --success-bg: #ecfdf3;
-        --success-text: #027a48;
-
-        --warning-bg: #fff7e6;
-        --warning-text: #b54708;
-
-        --danger-bg: #fef3f2;
-        --danger-text: #b42318;
     }
 
     .admin-shell {
@@ -48,1465 +30,601 @@
         padding: 24px;
     }
 
-    .admin-section {
-        margin-bottom: 20px;
-    }
-
     .admin-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 20px;
-        background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+        background: #ffffff;
         border: 1px solid var(--border);
-        border-radius: var(--radius-xl);
+        border-radius: var(--radius-lg);
+        padding: 22px 24px;
         box-shadow: var(--shadow-xs);
-        padding: 24px 26px;
-    }
-
-    .admin-header-left {
-        min-width: 0;
+        margin-bottom: 18px;
     }
 
     .admin-title {
         margin: 0;
-        font-size: 2rem;
-        line-height: 1.02;
-        color: var(--text-strong);
+        font-size: 1.9rem;
         font-weight: 800;
-        letter-spacing: -0.04em;
+        color: var(--text-strong);
+        letter-spacing: -0.03em;
     }
 
     .admin-subtitle {
-        margin: 8px 0 0;
-        color: #7a8699;
-        font-size: 0.96rem;
-        line-height: 1.5;
-        max-width: 760px;
-    }
-
-    .admin-header-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-
-    .btn-primary,
-    .btn-secondary,
-    .btn-ghost,
-    .mini-action,
-    .admin-tools-toggle,
-    .tab-button,
-    .bulk-action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 46px;
-        padding: 0 18px;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        text-decoration: none;
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: all 0.18s ease;
-        white-space: nowrap;
-        box-sizing: border-box;
-    }
-
-    .btn-primary,
-    .bulk-action-btn.primary {
-        background: linear-gradient(180deg, var(--brand-navy-2) 0%, var(--brand-navy) 100%);
-        color: #fff;
-        box-shadow: 0 8px 18px rgba(0, 45, 98, 0.14);
-    }
-
-    .btn-primary:hover,
-    .bulk-action-btn.primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 24px rgba(0, 45, 98, 0.18);
-        color: #fff;
-        text-decoration: none;
-    }
-
-    .btn-secondary,
-    .admin-tools-toggle,
-    .mini-action,
-    .bulk-action-btn.secondary {
-        background: #fff;
-        color: var(--text-main);
-        border-color: var(--border);
-        box-shadow: none;
-    }
-
-    .btn-secondary:hover,
-    .admin-tools-toggle:hover,
-    .mini-action:hover,
-    .bulk-action-btn.secondary:hover {
-        background: #f8fbff;
-        color: var(--text-main);
-        text-decoration: none;
-    }
-
-    .btn-ghost {
-        background: transparent;
+        margin-top: 6px;
+        font-size: 0.95rem;
         color: var(--text-soft);
-        border-color: transparent;
-        padding: 0;
-        min-height: 22px;
-        font-size: 0.84rem;
-        font-weight: 700;
-        line-height: 1;
-    }
-
-    .btn-ghost:hover {
-        color: var(--brand-navy);
-        text-decoration: none;
-    }
-
-    .btn-disabled {
-        opacity: 0.6;
-        pointer-events: none;
-        cursor: default;
-    }
-
-    .admin-tools {
-        position: relative;
-    }
-
-    .admin-tools-toggle {
-        gap: 8px;
-        padding-right: 16px;
-        padding-left: 16px;
-    }
-
-    .admin-tools-caret {
-        font-size: 0.78rem;
-        line-height: 1;
-        opacity: 0.8;
-        transition: transform 0.18s ease;
-    }
-
-    .admin-tools.open .admin-tools-menu {
-        display: block;
-        animation: toolsFadeIn 0.16s ease-out;
-    }
-
-    .admin-tools.open .admin-tools-caret {
-        transform: rotate(180deg);
-    }
-
-    @keyframes toolsFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-4px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .admin-tools-menu {
-        position: absolute;
-        right: 0;
-        top: calc(100% + 10px);
-        min-width: 320px;
-        background: #fff;
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        box-shadow: var(--shadow-md);
-        padding: 10px;
-        display: none;
-        z-index: 30;
-    }
-
-    .tools-group {
-        display: grid;
-        gap: 6px;
-    }
-
-    .tools-group-label {
-        padding: 6px 10px 2px;
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--text-muted);
-    }
-
-    .tools-link {
-        display: block;
-        min-height: 40px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        color: var(--text-main);
-        text-decoration: none;
-        transition: background 0.16s ease, transform 0.16s ease;
-    }
-
-    .tools-link:hover {
-        background: #f8fbff;
-        text-decoration: none;
-        transform: translateX(1px);
-    }
-
-    .tools-link-text {
-        display: block;
-    }
-
-    .tools-link-title {
-        display: block;
-        font-size: 0.9rem;
-        font-weight: 800;
-        color: var(--text-main);
-        line-height: 1.3;
-    }
-
-    .tools-link-subtitle {
-        display: block;
-        margin-top: 2px;
-        font-size: 0.78rem;
-        line-height: 1.4;
-        color: var(--text-soft);
-    }
-
-    .tools-divider {
-        height: 1px;
-        background: var(--border-soft);
-        margin: 10px 0;
     }
 
     .kpi-strip {
         display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 14px;
+        margin-bottom: 18px;
     }
 
     .kpi-card {
-        display: block;
-        text-decoration: none;
-        background: var(--surface);
+        background: #fff;
         border: 1px solid var(--border);
-        border-top: 3px solid transparent;
-        border-radius: 18px;
+        border-radius: 16px;
+        padding: 18px;
         box-shadow: var(--shadow-xs);
-        padding: 20px 20px 18px;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        color: inherit;
+        transition: all 0.15s ease;
+        cursor: pointer;
     }
 
     .kpi-card:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-sm);
-        text-decoration: none;
     }
-
-    .kpi-card.active {
-        border-color: rgba(0, 45, 98, 0.35);
-        box-shadow: 0 14px 28px rgba(0, 45, 98, 0.14);
-        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    }
-
-    .kpi-card.fix { border-top-color: #b42318; }
-    .kpi-card.progress { border-top-color: #b54708; }
-    .kpi-card.complete { border-top-color: #027a48; }
-    .kpi-card.financial { border-top-color: #002D62; }
 
     .kpi-label {
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
-        letter-spacing: 0.07em;
         color: var(--text-muted);
+        margin-bottom: 6px;
         font-weight: 700;
-        margin-bottom: 10px;
     }
 
     .kpi-value {
-        font-size: 1.95rem;
-        font-weight: 850;
+        font-size: 1.8rem;
+        font-weight: 800;
         color: var(--text-strong);
-        line-height: 1;
-        letter-spacing: -0.035em;
     }
-
-    .kpi-value.success { color: var(--success-text); }
-    .kpi-value.warning { color: var(--warning-text); }
-    .kpi-value.danger { color: var(--danger-text); }
-    .kpi-value.navy { color: var(--brand-navy); }
 
     .kpi-note {
-        margin-top: 8px;
-        color: var(--text-muted);
-        font-size: 0.78rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        margin-top: 6px;
+        color: var(--text-soft);
     }
 
-    .toolbar-card,
-    .tabs-card,
-    .module-card {
-        background: var(--surface);
+    .toolbar-card {
+        background: #fff;
         border: 1px solid var(--border);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-xs);
-    }
-
-    .toolbar-card-inner,
-    .table-panel-inner,
-    .module-card-inner {
-        padding: 18px 20px 20px;
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        margin-bottom: 18px;
     }
 
     .toolbar-top {
         display: grid;
-        grid-template-columns: minmax(420px, 2.2fr) minmax(140px, 0.75fr) minmax(140px, 0.75fr) minmax(130px, 0.65fr) minmax(130px, 0.65fr) auto;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
         gap: 10px;
         align-items: end;
-    }
-
-    .toolbar-bottom {
-        display: none;
-        grid-template-columns: repeat(3, minmax(140px, 1fr));
-        gap: 10px;
-        align-items: end;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid var(--border-soft);
-    }
-
-    .toolbar-bottom.open {
-        display: grid;
-    }
-
-    .field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        min-width: 0;
     }
 
     .field label {
-        display: block;
+        font-size: 0.8rem;
         font-weight: 700;
+        margin-bottom: 4px;
         color: #334155;
-        font-size: 0.82rem;
-        margin: 0;
     }
 
     .field input,
     .field select {
-        width: 100%;
-        max-width: 100%;
-        min-height: 44px;
-        padding: 10px 12px;
+        height: 42px;
+        border-radius: 10px;
         border: 1px solid #cfd7e3;
-        background-color: #ffffff;
-        color: var(--text-main);
-        font-size: 14px;
-        border-radius: 12px;
-        box-sizing: border-box;
-        margin: 0;
-        transition: border-color 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .field input:focus,
-    .field select:focus {
-        outline: none;
-        border-color: var(--brand-navy);
-        box-shadow: 0 0 0 4px rgba(0, 45, 98, 0.08);
-    }
-
-    .search-field {
-        min-width: 0;
-    }
-
-    .search-field input {
-        min-height: 46px;
+        padding: 8px 10px;
         font-size: 14px;
     }
 
-    .toolbar-actions {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        justify-content: flex-end;
-        flex-wrap: nowrap;
+    .btn-primary {
+        background: var(--brand-navy);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
     }
 
-    .filters-meta {
-        margin-top: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-
-    .filters-hint {
-        color: var(--text-muted);
-        font-size: 0.82rem;
-        font-weight: 600;
+    .btn-secondary {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
     }
 
     .tabs-row {
         display: flex;
-        flex-wrap: wrap;
         gap: 8px;
-        padding: 16px 18px;
-        border-bottom: 1px solid var(--border-soft);
-        background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+        padding: 14px;
+        border-bottom: 1px solid var(--border);
     }
 
     .tab-button {
         border: 1px solid #d6dde8;
         background: #fff;
-        color: var(--text-soft);
-        min-height: 42px;
-        padding: 0 16px;
+        padding: 8px 14px;
         border-radius: 999px;
-        font-size: 0.9rem;
-        font-weight: 800;
-    }
-
-    .tab-button:hover {
-        background: #f8fbff;
-        color: var(--text-main);
+        font-weight: 700;
+        cursor: pointer;
+        color: var(--text-soft);
     }
 
     .tab-button.active {
         background: var(--brand-navy);
-        border-color: var(--brand-navy);
         color: #fff;
-        box-shadow: 0 6px 14px rgba(0, 45, 98, 0.18);
-    }
-
-    .table-panel {
-        display: none;
-    }
-
-    .table-panel.active {
-        display: block;
-    }
-
-    .table-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 12px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-    }
-
-    .table-title {
-        margin: 0;
-        font-size: 1.06rem;
-        font-weight: 800;
-        color: var(--text-strong);
-        letter-spacing: -0.02em;
-    }
-
-    .table-subtitle {
-        margin: 5px 0 0;
-        color: var(--text-soft);
-        font-size: 0.88rem;
-        line-height: 1.45;
-    }
-
-    .table-count {
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: var(--text-soft);
-    }
-
-    .bulk-toolbar {
-        margin-bottom: 14px;
-        padding: 14px;
-        border: 1px solid var(--border-soft);
-        border-radius: 14px;
-        background: var(--surface-soft);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-
-    .bulk-toolbar-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .bulk-toolbar-copy {
-        color: var(--text-soft);
-        font-size: 0.84rem;
-        font-weight: 600;
-    }
-
-    .bulk-toolbar-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
+        border-color: var(--brand-navy);
     }
 
     .table-wrap {
         overflow-x: auto;
+        border-radius: 14px;
         border: 1px solid var(--border-soft);
-        border-radius: 16px;
-        background: #fff;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
     }
 
     .admin-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 980px;
-        table-layout: auto;
-    }
-
-    .admin-table th,
-    .admin-table td {
-        padding: 13px 14px;
-        text-align: left;
-        border-bottom: 1px solid var(--border-soft);
-        vertical-align: middle;
+        min-width: 950px;
     }
 
     .admin-table th {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        font-size: 0.74rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
-        letter-spacing: 0.065em;
-        color: #344054;
-        font-weight: 800;
         background: #f7f9fc;
-        white-space: nowrap;
-        border-bottom: 1px solid #dde3ec;
+        padding: 12px;
+        color: #475467;
     }
 
     .admin-table td {
-        font-size: 0.94rem;
-        color: var(--text-main);
-        white-space: nowrap;
+        padding: 12px;
+        border-bottom: 1px solid var(--border-soft);
+        font-size: 0.92rem;
     }
 
-    .admin-table tbody tr.clickable-row {
-        cursor: pointer;
-        transition: background 0.15s ease;
-    }
-
-    .admin-table tbody tr.clickable-row:hover td {
+    .admin-table tr:hover td {
         background: #f4f7fb;
     }
 
-    .select-col {
-        width: 52px;
-        min-width: 52px;
-        text-align: center !important;
-    }
-
-    .select-checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        accent-color: var(--brand-navy);
-    }
-
-    .cell-strong {
-        font-weight: 800;
-        color: var(--brand-navy);
-    }
-
-    .cell-money {
-        font-weight: 700;
-    }
-
-    .col-money {
-        width: 120px;
-        min-width: 120px;
-        text-align: right;
-    }
-
-    .seller-cell {
-        max-width: 180px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
     .status-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 24px;
-        padding: 0 10px;
+        padding: 4px 10px;
         border-radius: 999px;
         font-size: 0.72rem;
-        font-weight: 800;
-        line-height: 1;
-        letter-spacing: 0.02em;
-        white-space: nowrap;
+        font-weight: 700;
     }
 
-    .pill-success { background: var(--success-bg); color: var(--success-text); }
-    .pill-warning { background: var(--warning-bg); color: var(--warning-text); }
-    .pill-danger { background: var(--danger-bg); color: var(--danger-text); }
+    .pill-success { background: #ecfdf3; color: #027a48; }
+    .pill-warning { background: #fff7e6; color: #b54708; }
+    .pill-danger { background: #fef3f2; color: #b42318; }
     .pill-neutral { background: #f2f4f7; color: #475467; }
-    .pill-draft { background: rgba(0, 45, 98, 0.08); color: var(--brand-navy); }
-    .pill-exported { background: #ecfdf3; color: #027a48; }
-    .pill-ready { background: #fff7e6; color: #b54708; }
-
-    .action-cell {
-        width: 1%;
-        white-space: nowrap;
-    }
-
-    .row-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
 
     .empty-state {
+        padding: 12px;
         color: var(--text-soft);
         font-size: 0.9rem;
-        margin: 0;
-        padding: 4px 0;
-    }
-
-    .admin-modules {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px;
-    }
-
-    .module-title {
-        margin: 0 0 4px;
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--text-strong);
-    }
-
-    .module-copy {
-        margin: 0 0 14px;
-        color: var(--text-soft);
-        font-size: 0.88rem;
-        line-height: 1.45;
-    }
-
-    .module-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: 10px;
-    }
-
-    .module-list li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        border: 1px solid var(--border-soft);
-        border-radius: 12px;
-        background: #fcfdff;
-    }
-
-    .module-item-label {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: var(--text-main);
-    }
-
-    .module-item-copy {
-        font-size: 0.8rem;
-        color: var(--text-soft);
-        margin-top: 2px;
-    }
-
-    .completed-table {
-        width: 100%;
-        min-width: 1180px;
-        table-layout: fixed;
-    }
-
-    .completed-table th,
-    .completed-table td {
-        padding: 14px 10px;
-        vertical-align: middle;
-    }
-
-    .completed-table th {
-        white-space: normal;
-        word-break: normal;
-        overflow-wrap: anywhere;
-        line-height: 1.2;
-        font-size: 0.72rem;
-    }
-
-    .completed-table td {
-        font-size: 0.9rem;
-        line-height: 1.3;
-    }
-
-    .completed-table .col-select { width: 5%; }
-    .completed-table .col-isp { width: 14%; }
-    .completed-table .col-location { width: 10%; }
-    .completed-table .col-seller { width: 15%; }
-    .completed-table .col-money { width: 11%; }
-    .completed-table .col-status { width: 9%; }
-    .completed-table .col-date { width: 11%; }
-    .completed-table .col-export-status { width: 12%; }
-    .completed-table .col-exported-at { width: 13%; }
-    .completed-table .col-exported-by { width: 10%; }
-
-    .completed-table td.col-money,
-    .completed-table th.col-money {
-        text-align: right;
-    }
-
-    @media (max-width: 1280px) {
-        .kpi-strip {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .toolbar-top {
-            grid-template-columns: minmax(320px, 1fr) repeat(3, minmax(140px, 1fr));
-        }
-
-        .toolbar-actions {
-            grid-column: 1 / -1;
-            justify-content: flex-start;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-    }
-
-    @media (max-width: 1024px) {
-        .admin-shell {
-            padding: 18px;
-        }
-
-        .admin-header {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .admin-header-right {
-            justify-content: flex-start;
-        }
-
-        .toolbar-top {
-            grid-template-columns: repeat(2, minmax(140px, 1fr));
-        }
-
-        .toolbar-bottom,
-        .toolbar-bottom.open {
-            grid-template-columns: repeat(2, minmax(140px, 1fr));
-        }
-
-        .admin-modules {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .admin-shell {
-            padding: 14px;
-        }
-
-        .admin-title {
-            font-size: 1.65rem;
-        }
-
-        .kpi-strip {
-            grid-template-columns: 1fr;
-        }
-
-        .toolbar-top,
-        .toolbar-bottom,
-        .toolbar-bottom.open {
-            grid-template-columns: 1fr;
-        }
-
-        .admin-header {
-            padding: 18px;
-        }
-
-        .toolbar-card-inner,
-        .table-panel-inner,
-        .module-card-inner {
-            padding-left: 16px;
-            padding-right: 16px;
-        }
-
-        .btn-primary,
-        .btn-secondary,
-        .tab-button,
-        .admin-tools-toggle,
-        .bulk-action-btn {
-            width: 100%;
-        }
-
-        .admin-header-right,
-        .toolbar-actions,
-        .bulk-toolbar-actions {
-            width: 100%;
-        }
-
-        .admin-tools {
-            width: 100%;
-        }
-
-        .admin-tools-menu {
-            position: static;
-            width: 100%;
-            margin-top: 10px;
-        }
     }
 </style>
 
 <div class="admin-shell">
 
-    <section class="admin-section">
-        <div class="admin-header">
-            <div class="admin-header-left">
-                <h1 class="admin-title">Admin Dashboard</h1>
-                <p class="admin-subtitle">
-                    Manage purchases, workflow, users, and system operations.
-                </p>
-            </div>
-
-            <div class="admin-header-right">
-                {% if access.can_edit_all_purchases %}
-                    <span class="btn-primary btn-disabled">Add Buyer</span>
-
-                    <div class="admin-tools" id="adminTools">
-                        <button type="button" class="admin-tools-toggle" id="adminToolsToggle">
-                            Admin Tools
-                            <span class="admin-tools-caret">▾</span>
-                        </button>
-
-                        <div class="admin-tools-menu" id="adminToolsMenu">
-                            <div class="tools-group">
-                                <div class="tools-group-label">People</div>
-
-                                <span class="tools-link btn-disabled">
-                                    <span class="tools-link-text">
-                                        <span class="tools-link-title">Add Buyer</span>
-                                        <span class="tools-link-subtitle">Pending build</span>
-                                    </span>
-                                </span>
-
-                                <span class="tools-link btn-disabled">
-                                    <span class="tools-link-text">
-                                        <span class="tools-link-title">Manage Users</span>
-                                        <span class="tools-link-subtitle">Pending build</span>
-                                    </span>
-                                </span>
-                            </div>
-
-                            <div class="tools-divider"></div>
-
-                            <div class="tools-group">
-                                <div class="tools-group-label">Exports</div>
-
-                                <a
-                                    href="{% url 'export_accounting_report_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}&payment_method={{ payment_filter|urlencode }}"
-                                    class="tools-link"
-                                >
-                                    <span class="tools-link-text">
-                                        <span class="tools-link-title">Export Accounting CSV</span>
-                                        <span class="tools-link-subtitle">Payment report for accounting by finalized date</span>
-                                    </span>
-                                </a>
-
-                                <a
-                                    href="{% url 'export_filtered_finalized_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&payment_method={{ payment_filter|urlencode }}&export_status={{ export_status|urlencode }}&q={{ query|urlencode }}"
-                                    class="tools-link"
-                                >
-                                    <span class="tools-link-text">
-                                        <span class="tools-link-title">Export Finalized Orders CSV</span>
-                                        <span class="tools-link-subtitle">Order-level finalized purchase export</span>
-                                    </span>
-                                </a>
-
-                                <a
-                                    href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&payment_method={{ payment_filter|urlencode }}&export_status={{ export_status|urlencode }}&q={{ query|urlencode }}"
-                                    class="tools-link"
-                                >
-                                    <span class="tools-link-text">
-                                        <span class="tools-link-title">Export Finalized Order Products</span>
-                                        <span class="tools-link-subtitle">Product-level export for inventory import</span>
-                                    </span>
-                                </a>
-                            </div>
-
-                            <div class="tools-divider"></div>
-
-                            <div class="tools-group">
-                                <div class="tools-group-label">System</div>
-
-                                <span class="tools-link btn-disabled">
-                                    <span class="tools-link-text">
-                                        <span class="tools-link-title">System Settings</span>
-                                        <span class="tools-link-subtitle">Pending build</span>
-                                    </span>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
+<!-- HEADER -->
+<section class="admin-section">
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Admin Dashboard</h1>
+            <p class="admin-subtitle">
+                Operational control center for purchases, workflows, and exports.
+            </p>
         </div>
-    </section>
 
-    <section class="admin-section">
-        <div class="kpi-strip">
-            <a href="#" class="kpi-card fix" data-kpi-tab="fix-required">
-                <div class="kpi-label">Fix Required</div>
-                <div class="kpi-value danger">{{ fix_required_count }}</div>
-                <div class="kpi-note">Needs attention first</div>
-            </a>
+        <div class="admin-header-right">
+            {% if access.can_edit_all_purchases %}
+                <button class="btn-primary" disabled>Add Buyer</button>
 
-            <a href="#" class="kpi-card progress" data-kpi-tab="in-progress">
-                <div class="kpi-label">In Progress</div>
-                <div class="kpi-value warning">{{ in_progress_count }}</div>
-                <div class="kpi-note">Balanced drafts in motion</div>
-            </a>
+                <div class="admin-tools" id="adminTools">
+                    <button type="button" class="btn-secondary" id="adminToolsToggle">
+                        Admin Tools ▾
+                    </button>
 
-            <a href="#" class="kpi-card complete" data-kpi-tab="completed">
-                <div class="kpi-label">Completed</div>
-                <div class="kpi-value success">{{ completed_count }}</div>
-                <div class="kpi-note">Finalized purchases</div>
-            </a>
+                    <div class="admin-tools-menu" id="adminToolsMenu">
+                        <div class="tools-group">
+                            <div class="tools-group-label">Exports</div>
 
-            <a href="#" class="kpi-card financial" data-kpi-tab="all-purchases">
-                <div class="kpi-label">Total Purchases</div>
-                <div class="kpi-value navy">{{ total_purchases }}</div>
-            </a>
+                            <a href="{% url 'export_accounting_report_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="tools-link">
+                                Accounting Export
+                            </a>
 
-            <a href="#" class="kpi-card financial" data-kpi-tab="all-purchases">
-                <div class="kpi-label">Total Purchase Amount</div>
-                <div class="kpi-value">${{ total_purchase_amount|floatformat:2 }}</div>
-            </a>
+                            <a href="{% url 'export_filtered_finalized_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="tools-link">
+                                Finalized Orders Export
+                            </a>
 
-            <a href="#" class="kpi-card financial" data-kpi-tab="all-purchases">
-                <div class="kpi-label">Avg Margin</div>
-                <div class="kpi-value">{{ avg_margin|default:"—" }}</div>
-            </a>
+                            <a href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="tools-link">
+                                Product Export
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="admin-section">
-        <div class="toolbar-card">
-            <div class="toolbar-card-inner">
-                <form method="get">
-                    <div class="toolbar-top">
-                        <div class="field search-field">
-                            <label for="q">Search</label>
-                            <input type="text" id="q" name="q" value="{{ query }}" placeholder="Search ISP, seller, or buyer...">
-                        </div>
 
-                        <div class="field">
-                            <label for="date_from">Date From</label>
-                            <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
-                        </div>
+<!-- KPI -->
+<section class="admin-section">
+    <div class="kpi-strip">
 
-                        <div class="field">
-                            <label for="date_to">Date To</label>
-                            <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
-                        </div>
-
-                        <div class="field">
-                            <label for="buyer">Buyer</label>
-                            <select id="buyer" name="buyer">
-                                <option value="">All Buyers</option>
-                                {% for buyer_code in buyer_choices %}
-                                    <option value="{{ buyer_code }}" {% if buyer_filter == buyer_code %}selected{% endif %}>{{ buyer_code }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label for="location">Location</label>
-                            <select id="location" name="location">
-                                <option value="">All Locations</option>
-                                {% for location in location_choices %}
-                                    <option value="{{ location }}" {% if location_filter == location %}selected{% endif %}>{{ location }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="toolbar-actions">
-                            <button type="submit" class="btn-primary">Apply Filters</button>
-                            <button type="button" class="btn-secondary" id="moreFiltersToggle">More Filters</button>
-                        </div>
-                    </div>
-
-                    <div class="toolbar-bottom" id="moreFiltersPanel">
-                        <div class="field">
-                            <label for="status">Status</label>
-                            <select id="status" name="status">
-                                <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
-                                <option value="fix_required" {% if status_filter == "fix_required" %}selected{% endif %}>Fix Required</option>
-                                <option value="in_progress" {% if status_filter == "in_progress" %}selected{% endif %}>In Progress</option>
-                                <option value="completed" {% if status_filter == "completed" %}selected{% endif %}>Completed</option>
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label for="payment_method">Payment Method</label>
-                            <select id="payment_method" name="payment_method">
-                                <option value="" {% if not payment_filter %}selected{% endif %}>All Payment Methods</option>
-                                <option value="cash" {% if payment_filter == "cash" %}selected{% endif %}>Cash</option>
-                                <option value="check" {% if payment_filter == "check" %}selected{% endif %}>Check</option>
-                                <option value="gift_card" {% if payment_filter == "gift_card" %}selected{% endif %}>Gift Card</option>
-                                <option value="other" {% if payment_filter == "other" %}selected{% endif %}>Other</option>
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label for="export_status">Export Status</label>
-                            <select id="export_status" name="export_status">
-                                <option value="" {% if not export_status %}selected{% endif %}>All</option>
-                                <option value="not_exported" {% if export_status == "not_exported" %}selected{% endif %}>Not Exported</option>
-                                <option value="exported" {% if export_status == "exported" %}selected{% endif %}>Exported</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="filters-meta">
-                        <span class="filters-hint">Search is prioritized. Use more filters only when needed.</span>
-                        <a href="{% url 'admin_dashboard' %}" class="btn-ghost">Clear All</a>
-                    </div>
-                </form>
-            </div>
+        <div class="kpi-card" data-kpi-tab="fix-required" onclick="activateTab('fix-required')">
+            <div class="kpi-label">Fix Required</div>
+            <div class="kpi-value">{{ fix_required_count }}</div>
         </div>
-    </section>
 
-    <section class="admin-section">
-        <div class="tabs-card">
-            <div class="tabs-row">
-                <button type="button" class="tab-button" data-tab="fix-required">
-                    Fix Required ({{ fix_required_count }})
-                </button>
-
-                <button type="button" class="tab-button" data-tab="in-progress">
-                    In Progress ({{ in_progress_count }})
-                </button>
-
-                <button type="button" class="tab-button" data-tab="completed">
-                    Completed ({{ completed_count }})
-                </button>
-
-                <button type="button" class="tab-button" data-tab="all-purchases">
-                    All Purchases ({{ total_purchases }})
-                </button>
-            </div>
-
-            <div class="table-panel" id="panel-fix-required">
-                <div class="table-panel-inner">
-                    <div class="table-header">
-                        <div>
-                            <h2 class="table-title">Fix Required</h2>
-                            <p class="table-subtitle">Purchases with allocation mismatch or issues that need review.</p>
-                        </div>
-                        <span class="table-count">{{ fix_required_count }} purchase{{ fix_required_count|pluralize }}</span>
-                    </div>
-
-                    {% if fix_required_purchases %}
-                        <div class="table-wrap">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>ISP Number</th>
-                                        <th>Buyer</th>
-                                        <th>Location</th>
-                                        <th>Seller</th>
-                                        <th class="col-money">Total Purchase Amount</th>
-                                        <th>Reconciliation</th>
-                                        <th>Status</th>
-                                        <th>Created Date</th>
-                                        <th>Finalized Date</th>
-                                        {% if access.can_edit_all_purchases %}
-                                            <th class="action-cell">Actions</th>
-                                        {% endif %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for purchase in fix_required_purchases %}
-                                        <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
-                                            <td class="cell-strong">{{ purchase.isp_number }}</td>
-                                            <td>{{ purchase.buyer_initials }}</td>
-                                            <td>{{ purchase.location }}</td>
-                                            <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
-                                            <td>
-                                                {% if purchase.reconciliation_status == "under" %}
-                                                    <span class="status-pill pill-warning">Under</span>
-                                                {% elif purchase.reconciliation_status == "over" %}
-                                                    <span class="status-pill pill-danger">Over</span>
-                                                {% elif purchase.reconciliation_status == "balanced" %}
-                                                    <span class="status-pill pill-success">Balanced</span>
-                                                {% else %}
-                                                    <span class="status-pill pill-neutral">{{ purchase.reconciliation_status|title }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if purchase.workflow_status == "draft" %}
-                                                    <span class="status-pill pill-draft">Draft</span>
-                                                {% elif purchase.workflow_status == "finalized" %}
-                                                    <span class="status-pill pill-success">Finalized</span>
-                                                {% else %}
-                                                    <span class="status-pill pill-neutral">{{ purchase.workflow_status|title }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ purchase.created_at|localtime|date:"M j, Y g:i A" }}</td>
-                                            <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y g:i A" }}{% else %}—{% endif %}</td>
-                                            {% if access.can_edit_all_purchases %}
-                                                <td class="action-cell" onclick="event.stopPropagation();">
-                                                    <div class="row-actions">
-                                                        <a href="{% url 'purchase_detail' purchase.id %}" class="mini-action">View</a>
-                                                    </div>
-                                                </td>
-                                            {% endif %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="empty-state">No purchases currently require correction.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="table-panel" id="panel-in-progress">
-                <div class="table-panel-inner">
-                    <div class="table-header">
-                        <div>
-                            <h2 class="table-title">In Progress</h2>
-                            <p class="table-subtitle">Balanced draft purchases that are actively being completed.</p>
-                        </div>
-                        <span class="table-count">{{ in_progress_count }} purchase{{ in_progress_count|pluralize }}</span>
-                    </div>
-
-                    {% if in_progress_purchases %}
-                        <div class="table-wrap">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>ISP Number</th>
-                                        <th>Buyer</th>
-                                        <th>Location</th>
-                                        <th>Seller</th>
-                                        <th class="col-money">Total Purchase Amount</th>
-                                        <th>Reconciliation</th>
-                                        <th>Status</th>
-                                        <th>Created Date</th>
-                                        <th>Finalized Date</th>
-                                        {% if access.can_edit_all_purchases %}
-                                            <th class="action-cell">Actions</th>
-                                        {% endif %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for purchase in in_progress_purchases %}
-                                        <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
-                                            <td class="cell-strong">{{ purchase.isp_number }}</td>
-                                            <td>{{ purchase.buyer_initials }}</td>
-                                            <td>{{ purchase.location }}</td>
-                                            <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
-                                            <td><span class="status-pill pill-success">Balanced</span></td>
-                                            <td><span class="status-pill pill-draft">Draft</span></td>
-                                            <td>{{ purchase.created_at|localtime|date:"M j, Y g:i A" }}</td>
-                                            <td>—</td>
-                                            {% if access.can_edit_all_purchases %}
-                                                <td class="action-cell" onclick="event.stopPropagation();">
-                                                    <div class="row-actions">
-                                                        <a href="{% url 'purchase_detail' purchase.id %}" class="mini-action">View</a>
-                                                    </div>
-                                                </td>
-                                            {% endif %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="empty-state">No in-progress purchases match the current filters.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="table-panel" id="panel-completed">
-                <div class="table-panel-inner">
-                    <div class="table-header">
-                        <div>
-                            <h2 class="table-title">Completed</h2>
-                            <p class="table-subtitle">Finalized purchases ready for reporting, accounting, and export workflows.</p>
-                        </div>
-                        <span class="table-count">{{ completed_count }} purchase{{ completed_count|pluralize }}</span>
-                    </div>
-
-                    {% if completed_purchases %}
-                        <form method="post" action="{% url 'bulk_export_completed_purchases' %}" id="completedExportForm">
-                            {% csrf_token %}
-
-                            <div class="bulk-toolbar">
-                                <div class="bulk-toolbar-left">
-                                    <label>
-                                        <input type="checkbox" id="selectAllCompleted" class="select-checkbox">
-                                    </label>
-                                    <span class="bulk-toolbar-copy">Select completed purchases for product export.</span>
-                                </div>
-
-                                <div class="bulk-toolbar-actions">
-                                    <a
-                                        href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&payment_method={{ payment_filter|urlencode }}&export_status={{ export_status|urlencode }}&q={{ query|urlencode }}"
-                                        class="bulk-action-btn secondary"
-                                    >
-                                        Export All Filtered Products
-                                    </a>
-
-                                    <button type="submit" name="bulk_action" value="export_selected" class="bulk-action-btn primary">
-                                        Export Selected Products
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="table-wrap">
-                                <table class="admin-table completed-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="col-select select-col"></th>
-                                            <th class="col-isp">ISP Number</th>
-                                            <th class="col-location">Location</th>
-                                            <th class="col-seller">Seller</th>
-                                            <th class="col-money">Total Purchase Amount</th>
-                                            <th class="col-status">Status</th>
-                                            <th class="col-date">Created Date</th>
-                                            <th class="col-date">Finalized Date</th>
-                                            <th class="col-export-status">Export Status</th>
-                                            <th class="col-exported-at">Exported At</th>
-                                            <th class="col-exported-by">Exported By</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for purchase in completed_purchases %}
-                                            <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
-                                                <td class="select-col" onclick="event.stopPropagation();">
-                                                    <input
-                                                        type="checkbox"
-                                                        name="selected_purchase_ids"
-                                                        value="{{ purchase.id }}"
-                                                        class="select-checkbox completed-checkbox"
-                                                    >
-                                                </td>
-                                                <td class="cell-strong">{{ purchase.isp_number }}</td>
-                                                <td>{{ purchase.location }}</td>
-                                                <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                                <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
-                                                <td><span class="status-pill pill-success">Finalized</span></td>
-                                                <td>{{ purchase.created_at|localtime|date:"M j, Y" }}</td>
-                                                <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y" }}{% else %}—{% endif %}</td>
-                                                <td>
-                                                    {% if purchase.exported_at %}
-                                                        <span class="status-pill pill-exported">Exported</span>
-                                                    {% else %}
-                                                        <span class="status-pill pill-ready">Ready for Export</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    {% if purchase.exported_at %}
-                                                        {{ purchase.exported_at|localtime|date:"M j, Y g:i A" }}
-                                                    {% else %}
-                                                        —
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    {% if purchase.exported_by %}
-                                                        {{ purchase.exported_by.username }}
-                                                    {% else %}
-                                                        —
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </form>
-                    {% else %}
-                        <p class="empty-state">No completed purchases match the current filters.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="table-panel" id="panel-all-purchases">
-                <div class="table-panel-inner">
-                    <div class="table-header">
-                        <div>
-                            <h2 class="table-title">All Purchases</h2>
-                            <p class="table-subtitle">Full view across all matching purchases using the current filter set.</p>
-                        </div>
-                        <span class="table-count">{{ total_purchases }} result{{ total_purchases|pluralize }}</span>
-                    </div>
-
-                    {% if all_purchases %}
-                        <div class="table-wrap">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>ISP Number</th>
-                                        <th>Buyer</th>
-                                        <th>Location</th>
-                                        <th>Seller</th>
-                                        <th class="col-money">Total Purchase Amount</th>
-                                        <th>Reconciliation</th>
-                                        <th>Status</th>
-                                        <th>Created Date</th>
-                                        <th>Finalized Date</th>
-                                        {% if access.can_edit_all_purchases %}
-                                            <th class="action-cell">Actions</th>
-                                        {% endif %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for purchase in all_purchases %}
-                                        <tr class="clickable-row" data-href="{% url 'purchase_detail' purchase.id %}">
-                                            <td class="cell-strong">{{ purchase.isp_number }}</td>
-                                            <td>{{ purchase.buyer_initials }}</td>
-                                            <td>{{ purchase.location }}</td>
-                                            <td class="seller-cell">{{ purchase.seller_first_name }} {{ purchase.seller_last_name }}</td>
-                                            <td class="cell-money col-money">${{ purchase.purchase_total_amount|floatformat:2 }}</td>
-                                            <td>
-                                                {% if purchase.reconciliation_status == "under" %}
-                                                    <span class="status-pill pill-warning">Under</span>
-                                                {% elif purchase.reconciliation_status == "over" %}
-                                                    <span class="status-pill pill-danger">Over</span>
-                                                {% elif purchase.reconciliation_status == "balanced" %}
-                                                    <span class="status-pill pill-success">Balanced</span>
-                                                {% else %}
-                                                    <span class="status-pill pill-neutral">{{ purchase.reconciliation_status|title }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if purchase.workflow_status == "draft" %}
-                                                    <span class="status-pill pill-draft">Draft</span>
-                                                {% elif purchase.workflow_status == "finalized" %}
-                                                    <span class="status-pill pill-success">Finalized</span>
-                                                {% else %}
-                                                    <span class="status-pill pill-neutral">{{ purchase.workflow_status|title }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ purchase.created_at|localtime|date:"M j, Y g:i A" }}</td>
-                                            <td>{% if purchase.finalized_at %}{{ purchase.finalized_at|localtime|date:"M j, Y g:i A" }}{% else %}—{% endif %}</td>
-                                            {% if access.can_edit_all_purchases %}
-                                                <td class="action-cell" onclick="event.stopPropagation();">
-                                                    <div class="row-actions">
-                                                        <a href="{% url 'purchase_detail' purchase.id %}" class="mini-action">View</a>
-                                                    </div>
-                                                </td>
-                                            {% endif %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="empty-state">No purchases match the selected filters.</p>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="kpi-card" data-kpi-tab="in-progress" onclick="activateTab('in-progress')">
+            <div class="kpi-label">In Progress</div>
+            <div class="kpi-value">{{ in_progress_count }}</div>
         </div>
-    </section>
 
-    {% if access.can_edit_all_purchases %}
-        <section class="admin-section">
-            <div class="admin-modules">
-                <div class="module-card">
-                    <div class="module-card-inner">
-                        <h3 class="module-title">Exports</h3>
-                        <p class="module-copy">Keep reporting and operational exports structured and separated from workflow actions.</p>
+        <div class="kpi-card" data-kpi-tab="completed" onclick="activateTab('completed')">
+            <div class="kpi-label">Completed</div>
+            <div class="kpi-value">{{ completed_count }}</div>
+        </div>
 
-                        <ul class="module-list">
-                            <li>
-                                <div>
-                                    <div class="module-item-label">Accounting Report</div>
-                                    <div class="module-item-copy">Finalized purchases by finalized date with combined payment columns.</div>
-                                </div>
-                                <a href="{% url 'export_accounting_report_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}&payment_method={{ payment_filter|urlencode }}" class="btn-secondary">Export</a>
-                            </li>
+        <div class="kpi-card" data-kpi-tab="all-purchases" onclick="activateTab('all-purchases')">
+            <div class="kpi-label">Total Purchases</div>
+            <div class="kpi-value">{{ total_purchases }}</div>
+        </div>
 
-                            <li>
-                                <div>
-                                    <div class="module-item-label">Finalized Orders CSV</div>
-                                    <div class="module-item-copy">Order-level finalized export for operational review.</div>
-                                </div>
-                                <a href="{% url 'export_filtered_finalized_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&payment_method={{ payment_filter|urlencode }}&export_status={{ export_status|urlencode }}&q={{ query|urlencode }}" class="btn-secondary">Export</a>
-                            </li>
+        <div class="kpi-card">
+            <div class="kpi-label">Total Spend</div>
+            <div class="kpi-value">${{ total_purchase_amount|floatformat:2 }}</div>
+        </div>
 
-                            <li>
-                                <div>
-                                    <div class="module-item-label">Finalized Order Products</div>
-                                    <div class="module-item-copy">Product-level export by finalized date for inventory import.</div>
-                                </div>
-                                <a href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&payment_method={{ payment_filter|urlencode }}&export_status={{ export_status|urlencode }}&q={{ query|urlencode }}" class="btn-secondary">Export</a>
-                            </li>
-                        </ul>
-                    </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Margin</div>
+            <div class="kpi-value">{{ avg_margin|default:"—" }}</div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- FILTER -->
+<section class="admin-section">
+    <div class="toolbar-card">
+        <form method="get">
+            <div class="toolbar-top">
+
+                <div class="field">
+                    <label>Search</label>
+                    <input type="text" name="q" value="{{ query }}">
                 </div>
 
-                <div class="module-card">
-                    <div class="module-card-inner">
-                        <h3 class="module-title">Admin Utilities</h3>
-                        <p class="module-copy">Centralized admin-only tools for user and system management.</p>
-
-                        <ul class="module-list">
-                            <li>
-                                <div>
-                                    <div class="module-item-label">Manage Users</div>
-                                    <div class="module-item-copy">Roles, passwords, status, and user administration.</div>
-                                </div>
-                                <a href="{% url 'manage_users' %}" class="btn-secondary">Open</a>
-                            </li>
-
-                            <li>
-                                <div>
-                                    <div class="module-item-label">Add Buyer</div>
-                                    <div class="module-item-copy">Create a new buyer profile and grant access.</div>
-                                </div>
-                                <a href="{% url 'add_buyer' %}" class="btn-secondary">Open</a>
-                            </li>
-
-                            <li>
-                                <div>
-                                    <div class="module-item-label">System Settings</div>
-                                    <div class="module-item-copy">Reserved for future admin-level system controls.</div>
-                                </div>
-                                <a href="{% url 'system_settings' %}" class="btn-secondary">Open</a>
-                            </li>
-                        </ul>
-                    </div>
+                <div class="field">
+                    <label>Date From</label>
+                    <input type="date" name="date_from" value="{{ date_from }}">
                 </div>
+
+                <div class="field">
+                    <label>Date To</label>
+                    <input type="date" name="date_to" value="{{ date_to }}">
+                </div>
+
+                <div class="field">
+                    <label>Buyer</label>
+                    <select name="buyer">
+                        <option value="">All</option>
+                        {% for b in buyer_choices %}
+                            <option value="{{ b }}" {% if buyer_filter == b %}selected{% endif %}>{{ b }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Location</label>
+                    <select name="location">
+                        <option value="">All</option>
+                        {% for l in location_choices %}
+                            <option value="{{ l }}" {% if location_filter == l %}selected{% endif %}>{{ l }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <button class="btn-primary">Apply</button>
+                </div>
+
             </div>
-        </section>
-    {% endif %}
+        </form>
+    </div>
+</section>
+
+
+<!-- TABS -->
+<section class="admin-section">
+<div class="tabs-card">
+
+<div class="tabs-row">
+    <button type="button" class="tab-button" data-tab="fix-required">Fix Required</button>
+    <button type="button" class="tab-button" data-tab="in-progress">In Progress</button>
+    <button type="button" class="tab-button" data-tab="completed">Completed</button>
+    <button type="button" class="tab-button" data-tab="all-purchases">All Purchases</button>
 </div>
 
+
+<!-- FIX REQUIRED -->
+<div class="table-panel" id="panel-fix-required">
+    <div class="table-panel-inner">
+
+        {% if fix_required_purchases %}
+        <div class="table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ISP</th>
+                        <th>Buyer</th>
+                        <th>Location</th>
+                        <th>Seller</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in fix_required_purchases %}
+                    <tr data-href="{% url 'purchase_detail' p.id %}">
+                        <td>{{ p.isp_number }}</td>
+                        <td>{{ p.buyer_initials }}</td>
+                        <td>{{ p.location }}</td>
+                        <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
+                        <td>${{ p.purchase_total_amount }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="empty-state">No purchases require attention.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+
+<!-- IN PROGRESS -->
+<div class="table-panel" id="panel-in-progress">
+    <div class="table-panel-inner">
+
+        {% if in_progress_purchases %}
+        <div class="table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ISP</th>
+                        <th>Buyer</th>
+                        <th>Location</th>
+                        <th>Seller</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in in_progress_purchases %}
+                    <tr data-href="{% url 'purchase_detail' p.id %}">
+                        <td>{{ p.isp_number }}</td>
+                        <td>{{ p.buyer_initials }}</td>
+                        <td>{{ p.location }}</td>
+                        <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
+                        <td>${{ p.purchase_total_amount }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="empty-state">No active drafts.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+
+<!-- COMPLETED -->
+<div class="table-panel" id="panel-completed">
+    <div class="table-panel-inner">
+
+        {% if completed_purchases %}
+        <form method="post" action="{% url 'bulk_export_completed_purchases' %}">
+            {% csrf_token %}
+
+            <div class="bulk-toolbar">
+                <label>
+                    <input type="checkbox" id="selectAllCompleted" onclick="toggleAllCompleted(this)"> Select All
+                </label>
+
+                <div class="bulk-toolbar-actions">
+                    <button type="submit" class="btn-primary">Export Selected</button>
+                    <a href="{% url 'bulk_export_completed_purchases' %}" class="btn-secondary">Export All</a>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>ISP</th>
+                            <th>Location</th>
+                            <th>Seller</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in completed_purchases %}
+                        <tr data-href="{% url 'purchase_detail' p.id %}">
+                            <td onclick="event.stopPropagation();">
+                                <input type="checkbox" name="selected_purchase_ids" value="{{ p.id }}"></td>
+                            <td>{{ p.isp_number }}</td>
+                            <td>{{ p.location }}</td>
+                            <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
+                            <td>${{ p.purchase_total_amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+        {% else %}
+            <p class="empty-state">No completed purchases.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+
+<!-- ALL -->
+<div class="table-panel" id="panel-all-purchases">
+    <div class="table-panel-inner">
+
+        {% if all_purchases %}
+        <div class="table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ISP</th>
+                        <th>Buyer</th>
+                        <th>Location</th>
+                        <th>Seller</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in all_purchases %}
+                    <tr data-href="{% url 'purchase_detail' p.id %}">
+                        <td>{{ p.isp_number }}</td>
+                        <td>{{ p.buyer_initials }}</td>
+                        <td>{{ p.location }}</td>
+                        <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
+                        <td>${{ p.purchase_total_amount }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="empty-state">No results found.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+</div>
+</section>
+
+
+<!-- ADMIN UTILITIES (UNCHANGED + SAFE) -->
+{% if access.can_edit_all_purchases %}
+<section class="admin-section">
+    <div class="admin-modules">
+
+        <div class="module-card">
+            <div class="module-card-inner">
+                <h3 class="module-title">Admin Utilities</h3>
+
+                <ul class="module-list">
+                    <li>
+                        <div>
+                            <div class="module-item-label">Manage Users</div>
+                        </div>
+                        <a href="{% url 'manage_users' %}" class="btn-secondary">Open</a>
+                    </li>
+
+                    <li>
+                        <div>
+                            <div class="module-item-label">Add Buyer</div>
+                        </div>
+                        <a href="{% url 'add_buyer' %}" class="btn-secondary">Open</a>
+                    </li>
+
+                    <li>
+                        <div>
+                            <div class="module-item-label">System Settings</div>
+                        </div>
+                        <a href="{% url 'system_settings' %}" class="btn-secondary">Open</a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endif %}
+
 <script>
-(function () {
+function toggleAllCompleted(source) {
+    const checkboxes = document.querySelectorAll('input[name="selected_purchase_ids"]');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+}
+
+function activateTab(tab) {
+    const buttons = document.querySelectorAll(".tab-button");
+    const panels = document.querySelectorAll(".table-panel");
+    const kpiCards = document.querySelectorAll("[data-kpi-tab]");
+
+    panels.forEach(panel => {
+        panel.style.display = "none";
+        panel.classList.remove("active");
+    });
+
+    buttons.forEach(button => {
+        button.classList.remove("active");
+    });
+
+    kpiCards.forEach(card => {
+        card.classList.remove("active");
+    });
+
+    const activePanel = document.getElementById("panel-" + tab);
+    const activeButton = document.querySelector('.tab-button[data-tab="' + tab + '"]');
+    const activeCard = document.querySelector('[data-kpi-tab="' + tab + '"]');
+
+    if (activePanel) {
+        activePanel.style.display = "block";
+        activePanel.classList.add("active");
+    }
+
+    if (activeButton) {
+        activeButton.classList.add("active");
+    }
+
+    if (activeCard) {
+        activeCard.classList.add("active");
+    }
+
+    localStorage.setItem("adminDashboardActiveTab", tab);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
     const tools = document.getElementById("adminTools");
     const toolsToggle = document.getElementById("adminToolsToggle");
+    const moreFiltersToggle = document.getElementById("moreFiltersToggle");
+    const moreFiltersPanel = document.getElementById("moreFiltersPanel");
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const kpiCards = document.querySelectorAll("[data-kpi-tab]");
+    const selectAllCompleted = document.getElementById("selectAllCompleted");
+    const completedCheckboxes = document.querySelectorAll('input[name="selected_purchase_ids"]');
 
     if (tools && toolsToggle) {
         toolsToggle.addEventListener("click", function (event) {
@@ -1527,15 +645,11 @@
         });
     }
 
-    const moreFiltersToggle = document.getElementById("moreFiltersToggle");
-    const moreFiltersPanel = document.getElementById("moreFiltersPanel");
-
     if (moreFiltersToggle && moreFiltersPanel) {
-        const shouldOpenMoreFilters = (
+        const shouldOpenMoreFilters =
             "{{ status_filter|default:'' }}" !== "" ||
             "{{ payment_filter|default:'' }}" !== "" ||
-            "{{ export_status|default:'' }}" !== ""
-        );
+            "{{ export_status|default:'' }}" !== "";
 
         if (shouldOpenMoreFilters) {
             moreFiltersPanel.classList.add("open");
@@ -1546,27 +660,6 @@
         });
     }
 
-    const panels = document.querySelectorAll(".table-panel");
-    const tabButtons = document.querySelectorAll(".tab-button");
-    const kpiCards = document.querySelectorAll("[data-kpi-tab]");
-    const storageKey = "adminDashboardActiveTab";
-
-    function activateTab(tabName) {
-        panels.forEach(panel => {
-            panel.classList.toggle("active", panel.id === `panel-${tabName}`);
-        });
-
-        tabButtons.forEach(button => {
-            button.classList.toggle("active", button.dataset.tab === tabName);
-        });
-
-        kpiCards.forEach(card => {
-            card.classList.toggle("active", card.dataset.kpiTab === tabName);
-        });
-
-        localStorage.setItem(storageKey, tabName);
-    }
-
     tabButtons.forEach(button => {
         button.addEventListener("click", function () {
             activateTab(button.dataset.tab);
@@ -1574,13 +667,12 @@
     });
 
     kpiCards.forEach(card => {
-        card.addEventListener("click", function (event) {
-            event.preventDefault();
+        card.addEventListener("click", function () {
             activateTab(card.dataset.kpiTab);
         });
     });
 
-    const savedTab = localStorage.getItem(storageKey);
+    const savedTab = localStorage.getItem("adminDashboardActiveTab");
     activateTab(savedTab || "fix-required");
 
     document.querySelectorAll("tr[data-href]").forEach(row => {
@@ -1588,9 +680,6 @@
             window.location.href = row.dataset.href;
         });
     });
-
-    const selectAllCompleted = document.getElementById("selectAllCompleted");
-    const completedCheckboxes = document.querySelectorAll(".completed-checkbox");
 
     if (selectAllCompleted && completedCheckboxes.length) {
         selectAllCompleted.addEventListener("change", function () {
@@ -1608,6 +697,6 @@
             });
         });
     }
-})();
+});
 </script>
 {% endblock %}
