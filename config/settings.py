@@ -25,7 +25,7 @@ import os
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-dev-only-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 import os
 

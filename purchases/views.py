@@ -888,7 +888,7 @@ def buyer_dashboard(request):
 
     return render(
         request,
-        "purchases/dashboard.html",
+        "purchases/admin_dashboard.html",
         {
             "query": query,
             "status_filter": status_filter,
