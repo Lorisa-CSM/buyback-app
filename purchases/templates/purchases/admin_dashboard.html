@@ -48,23 +48,63 @@ body {
 }
 
 .admin-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
-    margin: 0;
+    margin-bottom: 2px;
 }
 
 .admin-section {
-    margin-bottom: 18px;
+    margin-bottom: 14px;
+}
+
+.admin-section .section-inner{
+    border-radius: 10px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 2px 8px rgba (16, 24, 40, 0.04);
+    padding-top: 16px;
+    padding-bottom: 16px;
 }
 
 .admin-subtitle {
     color: #667085;
-    margin-top: 4px;
+    margin-top: 0px;
+    font-size: 13px;
 }
 
 .admin-header-right {
     display: flex;
     align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.admin-tools {
+    position: relative;
+    margin-left: 10px;
+}
+
+.admin-tools-dropdown {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e5ebf3;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 8px;
+}
+
+.admin-tools.open .admin-tools-dropdown {
+    display: block;
 }
 
 /* KPI */
@@ -74,15 +114,25 @@ body {
     gap: 16px;
     margin-top: 16px;
 }
+.kpi-section-flat .section-inner {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
 
 .kpi-card {
-    border-radius: 18px;
-    padding: 20px 18px 18px;
-    border: 1px solid #dde5ef;
+    border-radius: 16px;
+    padding: 16px 16px 14px;
+    border: 1px solid #f0f3f8;
     border-top: 6px solid transparent;
-    box-shadow: 0 14px 32px rgba(16, 24, 40, 0.12);
-    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.6);
+    background: #fff;
     overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .kpi-card.fix {
@@ -114,7 +164,7 @@ body {
     font-size: 11px;
     letter-spacing: 0.6px;
     text-transform: uppercase;
-    color: #98a2b3;
+    color: #667085;
 }
 
 .kpi-note {
@@ -123,9 +173,13 @@ body {
     margin-top: 4px;
 }
 
+.kpi-card.financial .kpi-value {
+    font-weight: 700;
+}
+
 /* FILTER */
 .toolbar-top {
-        display: grid;
+    display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
     gap: 12px;
     align-items: end;
@@ -134,17 +188,99 @@ body {
 .toolbar-card {
     background: #ffffff;
     border-radius: 16px;
-    border: 1px solid #e5ebf3;
-    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.05);
-    padding: 16px;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.04);
+    padding: 14px 16px;
+}
+
+.toolbar-card-inner {
+    padding: 0;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+    min-height: auto;
+}
+
+.field-label {
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1;
+    display: block;
 }
 
 .field input,
 .field select {
-    height: 42px;
+    height: 40px;
+    margin: 0;
     border-radius: 10px;
     border: 1px solid #d0d7e2;
-    padding: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #142033;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.field input:focus
+.field select:focus {
+    outline: none;
+    border-color: #002D62;
+    box-shadow: 0 0 0 3px rgba(0, 45, 98, 0.08);
+}
+
+.filter-helper {
+    font-size: 11px;
+    color: #a0a8b5;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.toolbar-actions button {
+    height: 40px;
+}
+
+.search-field {
+    grid-row: span 2;
+}
+
+.search-field input {
+    background: #fafbfc;
+}
+
+.clear-link {
+    font-size: 12px;
+    color: #667085;
+    margin-left: 10px;
+    text-decoration: none;
+}
+
+/* Apply (primary) */
+button.apply {
+    background: #002D62;
+    color: #fff;
+}
+
+/* More Filters (secondary) */
+button.secondary {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* Clear All (tertiary link) */
+.clear-link {
+    color: #9ca3af;
 }
 
 /* BUTTONS */
@@ -159,9 +295,20 @@ body {
 
 .btn-secondary {
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 0px 12px;
     border: 1px solid #d0d7e2;
-    background: #fff;
+    color: #002d62;
+    background-color: #fff;
+    height: 36px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #8b95a7;
+    color: #344054;
 }
 
 /* TABS */
@@ -182,9 +329,14 @@ body {
 
 .tab-button.active {
     background: #002D62;
+    opacity: 0.92;
     color: #fff;
     border-color: #002D62;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+.tab:not(.active) {
+    background: #f2f4f7;
+    color: #667085;
 }
 
 /* TABLE */
@@ -194,17 +346,73 @@ body {
     overflow: hidden;
 }
 
+.table-actions {
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
 .admin-table th {
     background: #f1f5f9;
     font-size: 12px;
     padding: 12px;
     font-weight: 700;
     color: #344054;
+    text-align: left;
+    font-weight: 600;
 }
 
 .admin-table td {
     padding: 10px;
     border-top: 1px solid #eef2f7;
+    font-size: 14px;
+    color: #142033;
+    text-align: left;
+}
+
+/* MONEY */
+.col.money {
+    text-align: right;
+    font-weight: 600;
+}
+
+/* STATUS */
+.col-status {
+    text-align: center;
+}
+
+/* ISP STRONG */
+.cell-strong {
+    text-align: center;
+    font-weight: 700;
+}
+
+/* STATUS COLUMN CENTER */
+.col-status {
+    text-align: center;
+}
+
+/* STATUS PILLS */
+.status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-under {
+    background: rgba(210, 24, 72, 0.08);
+    color: #D21848;
+}
+
+.status-balanced {
+    background: rgba(22, 163, 74, 0.10);
+    color: #16a34a
+}
+
+.status-over {
+    background: rgba(217, 119, 6, 0.14);
+    color: #92400e;
 }
 
 /* MODULES */
@@ -249,7 +457,7 @@ body {
     }
 
     .toolbar-top {
-        grid-template-columns: 1fr 1fr;
+        align-items: start;
     }
 
     .admin-modules {
@@ -302,13 +510,22 @@ body {
                 <div class="admin-header-left">
                     <h1 class="admin-title">Admin Dashboard</h1>
                     <p class="admin-subtitle">
-                        Operational control center for purchases, workflows, and exports.
+                        Manage purchases, workflows, users, and system operations.
                     </p>
                 </div>
 
                 <div class="admin-header-right">
-                    {% if access.can_edit_all_purchases %}
+                    {% if access.can_edit_all_purchases %}             
+                    <div class="admin-tools" id="admin-tools">
+                        <button class ="btn-secondary"id="adminToolsToggle">
+                            Admin Tools
+                        </button>
 
+                        <div class="admin-tools-dropdown">
+                            <a href="{% url 'manage_users'%}">Manage Users</a>
+                            <a href="{% url 'system_settings' %}">System Settings</a>
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -316,7 +533,7 @@ body {
     </section>
 
     <!-- KPI -->
-    <section class="admin-section">
+    <section class="admin-section kpi-section-flat">
         <div class="section-inner">
             <div class="kpi-strip">
                 <div class="kpi-card fix" data-kpi-tab="fix-required" onclick="activateTab('fix-required')">
@@ -368,6 +585,9 @@ body {
                             <div class="field search-field">
                                 <label>Search</label>
                                 <input type="text" name="q" value="{{ query }}" placeholder="ISP, seller, buyer...">
+                                <p class="filter-helper">
+                                    Search is prioritized. Use more filters only when needed.
+                                </p>
                             </div>
 
                             <div class="field">
@@ -402,7 +622,9 @@ body {
 
                             <div class="toolbar-actions">
                                 <button type="submit" class="btn-primary">Apply</button>
-                                <a href="{% url 'admin_dashboard' %}" class="btn-secondary">Clear</a>
+                                <button type="button" class="btn-secondary" id="moreFiltersToggle"> More Filters</button>
+                                <a href="{% url 'admin_dashboard' %}" class="clear-link">Clear All</a>
+
                             </div>
                         </div>
                     </form>
@@ -429,7 +651,7 @@ body {
                         <div class="table-header">
                             <div>
                                 <h2 class="table-title">Fix Required</h2>
-                                <p class="table-subtitle">Purchases that need correction before finalizing.</p>
+                                <p class="table-subtitle">Purchases with allocation mismatch or issues that need review.</p>
                             </div>
                             <span class="table-count">{{ fix_required_count }} item{{ fix_required_count|pluralize }}</span>
                         </div>
@@ -440,20 +662,37 @@ body {
                                     <thead>
                                         <tr>
                                             <th>ISP</th>
-                                            <th>Buyer</th>
                                             <th>Location</th>
                                             <th>Seller</th>
-                                            <th class="col-money">Amount</th>
+                                            <th>Purchase Total</th>
+                                            <th>Balance Status</th>
+                                            <th>Created Date</th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for p in fix_required_purchases %}
                                             <tr data-href="{% url 'purchase_detail' p.id %}">
                                                 <td class="cell-strong">{{ p.isp_number }}</td>
-                                                <td>{{ p.buyer_initials }}</td>
                                                 <td>{{ p.location }}</td>
                                                 <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
                                                 <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
+                                                <td class="col-status">
+                                                    {% if p.reconciliation_status %}
+                                                        {% if p.reconciliation_status|lower == "under" %}
+                                                            <span class="status-pill status-under">Under</span>
+                                                        {% elif p.reconciliation_status|lower == "balanced" %}
+                                                            <span class="status-pill status-balanced">Balanced</span>
+                                                        {% elif p.reconciliation_status|lower == "over" %}
+                                                            <span class="status-pill status-over">Over</span>
+                                                        {% else %}
+                                                            <span class="status-pill">{{ p.reconciliation_status }}</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="status-pill">—</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{p.created_at|date:"M d, Y h:i A" }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -471,7 +710,7 @@ body {
                         <div class="table-header">
                             <div>
                                 <h2 class="table-title">In Progress</h2>
-                                <p class="table-subtitle">Balanced drafts currently being completed.</p>
+                                <p class="table-subtitle">Balanced draft purchases that are actively being completed..</p>
                             </div>
                             <span class="table-count">{{ in_progress_count }} item{{ in_progress_count|pluralize }}</span>
                         </div>
@@ -482,20 +721,37 @@ body {
                                     <thead>
                                         <tr>
                                             <th>ISP</th>
-                                            <th>Buyer</th>
                                             <th>Location</th>
                                             <th>Seller</th>
-                                            <th class="col-money">Amount</th>
+                                            <th class="col-money">Purchase Total</th>
+                                            <th>Balance Status</th>
+                                            <th>Created Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for p in in_progress_purchases %}
                                             <tr data-href="{% url 'purchase_detail' p.id %}">
                                                 <td class="cell-strong">{{ p.isp_number }}</td>
-                                                <td>{{ p.buyer_initials }}</td>
                                                 <td>{{ p.location }}</td>
                                                 <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
                                                 <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
+                                                <td class="col-status">
+                                                    {% if p.reconciliation_status %}
+                                                        {% if p.reconciliation_status|lower == "under" %}
+                                                            <span class="status-pill status-under">Under</span>
+                                                        {% elif p.reconciliation_status|lower == "balanced" %}
+                                                            <span class="status-pill status-balanced">Balanced</span>
+                                                        {% elif p.reconciliation_status|lower == "over" %}
+                                                            <span class="status-pill status-over">Over</span>
+                                                        {% else %}
+                                                            <span class="status-pill">{{ p.reconciliation_status }}</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="status-pill">—</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{p.created_at|date:"M d, Y h:i A" }}</td>
+
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -513,7 +769,7 @@ body {
                         <div class="table-header">
                             <div>
                                 <h2 class="table-title">Completed</h2>
-                                <p class="table-subtitle">Finalized purchases ready for export.</p>
+                                <p class="table-subtitle">Finalized purchases ready for reporting, accounting, and export workflows.</p>
                             </div>
                             <span class="table-count">{{ completed_count }} item{{ completed_count|pluralize }}</span>
                         </div>
@@ -540,11 +796,15 @@ body {
                                     <table class="admin-table">
                                         <thead>
                                             <tr>
-                                                <th></th>
+                                                <th>Select</th>
                                                 <th>ISP</th>
                                                 <th>Location</th>
                                                 <th>Seller</th>
-                                                <th class="col-money">Amount</th>
+                                                <th>Status</th>
+                                                <th class="col-money">Purchase Total</th>
+                                                <th>Created</th>
+                                                <th>Finalized</th>
+                                                <th>Exported</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -553,10 +813,14 @@ body {
                                                     <td onclick="event.stopPropagation();">
                                                         <input type="checkbox" name="selected_purchase_ids" value="{{ p.id }}">
                                                     </td>
+                                                    <td>{{p.status}}</td>
                                                     <td class="cell-strong">{{ p.isp_number }}</td>
                                                     <td>{{ p.location }}</td>
                                                     <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
                                                     <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
+                                                    <td>{{p.created_at|date:"M d, Y" }}</td>
+                                                    <td>{{p.finalized_at|date:"M d, Y"}}</td>
+                                                    <td>{{p.exported_at|date:"M d, Y" }}</td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
@@ -575,7 +839,7 @@ body {
                         <div class="table-header">
                             <div>
                                 <h2 class="table-title">All Purchases</h2>
-                                <p class="table-subtitle">Full filtered purchase set.</p>
+                                <p class="table-subtitle">Full view across all matching purchases using the current filter set.</p>
                             </div>
                             <span class="table-count">{{ total_purchases }} result{{ total_purchases|pluralize }}</span>
                         </div>
@@ -586,9 +850,10 @@ body {
                                     <thead>
                                         <tr>
                                             <th>ISP</th>
-                                            <th>Buyer</th>
                                             <th>Location</th>
                                             <th>Seller</th>
+                                            <th>Balance Status</th>
+                                            <th>Status</th>
                                             <th class="col-money">Amount</th>
                                         </tr>
                                     </thead>
@@ -596,9 +861,24 @@ body {
                                         {% for p in all_purchases %}
                                             <tr data-href="{% url 'purchase_detail' p.id %}">
                                                 <td class="cell-strong">{{ p.isp_number }}</td>
-                                                <td>{{ p.buyer_initials }}</td>
                                                 <td>{{ p.location }}</td>
                                                 <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
+                                                <td class="col-status">
+                                                    {% if p.reconciliation_status %}
+                                                        {% if p.reconciliation_status|lower == "under" %}
+                                                            <span class="status-pill status-under">Under</span>
+                                                        {% elif p.reconciliation_status|lower == "balanced" %}
+                                                            <span class="status-pill status-balanced">Balanced</span>
+                                                        {% elif p.reconciliation_status|lower == "over" %}
+                                                            <span class="status-pill status-over">Over</span>
+                                                        {% else %}
+                                                            <span class="status-pill">{{ p.reconciliation_status }}</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="status-pill">—</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ p.status }}</td>
                                                 <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
                                             </tr>
                                         {% endfor %}

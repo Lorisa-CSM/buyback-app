@@ -68,10 +68,25 @@
     }
 
     .header-user {
-        color: rgba(255, 255, 255, 0.88);
-        font-size: 0.9rem;
+        padding-left: 12px;
+        border-left: 1px solid rgba(255, 255, 255, 0.22);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 13px;
         font-weight: 600;
         white-space: nowrap;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .header-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
     .header-link {
@@ -302,7 +317,6 @@
         <div class="site-header-inner">
             <div class="site-header-left">
               <img src="{% static 'images/trading-hub-header.png' %}" alt="CARDIACS Trade Hub" class="site-logo">
-              <!-- <span class="site-logo">CARDIACS Trade Hub</span>-->
             </div>
 
             <div class="site-header-right">
@@ -315,13 +329,13 @@
                         {% endif %}
                     {% endif %}
 
-                    <span class="header-user">{{ request.user.username }}</span>
-
                     <form method="post" action="{% url 'accounts_logout' %}" style="margin: 0;">
                         {% csrf_token %}
                         <button type="submit" class="header-link" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16);">
                             Log Out
                         </button>
+                    <span class="header-user">{{ request.user.username }}</span>
+
                     </form>
                 {% else %}
                     <a href="{% url 'accounts_login' %}" class="header-link">Log In</a>
