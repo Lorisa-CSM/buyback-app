@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="{% static 'images/trading-hub-favicon.png' %}">
+    
 
 <style>
     body {
@@ -334,10 +335,11 @@
                         <button type="submit" class="header-link" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16);">
                             Log Out
                         </button>
-                    <span class="header-user">{{ request.user.username }}</span>
-
                     </form>
-                {% else %}
+                    
+                    <span class="header-user">{{ request.user.username }}</span>
+                    
+                    {% else %}
                     <a href="{% url 'accounts_login' %}" class="header-link">Log In</a>
                 {% endif %}
             </div>
@@ -353,5 +355,11 @@
 
         {% block content %}{% endblock %}
     </main>
+
+    <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script> 
+    <script> 
+        if (window.feather) { feather.replace(); } 
+    </script>
+
 </body>
 </html>

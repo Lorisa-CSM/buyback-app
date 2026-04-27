@@ -4,11 +4,13 @@ import csv
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+
 
 from .forms import PurchaseForm, PurchaseItemsForm, PurchaseItemFormSet, BulkCardForm
 from .models import Purchase, PurchaseItem
@@ -1601,9 +1603,9 @@ def export_accounting_report_csv(request):
 def admin_utilities(request):
     access = get_user_profile_flags(request.user)
 
-    if not can_view_reports(access):
+    if not access["can_edit_all_purchases"]:
         messages.error(request, "You do not have permission to access admin utilities.")
-        return redirect("buyer_dashboard")
+        return redirect("admin_dashboard")
 
     return render(request, "purchases/admin_utilities.html", {
         "access": access,
@@ -1620,6 +1622,36 @@ def manage_users(request):
         return redirect("admin_utilities")
 
     from django.contrib.auth.models import User
+    from .models import BuyerProfile
+
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
+        user = get_object_or_404(User, id=user_id)
+
+        profile, created = BuyerProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "buyer_code": user.username.upper()[:10],
+            },
+        )
+
+        user.first_name = request.POST.get("first_name", "").strip()
+        user.last_name = request.POST.get("last_name", "").strip()
+        user.email = request.POST.get("email", "").strip()
+        user.is_active = request.POST.get("is_active") == "on"
+        user.save()
+
+        profile.buyer_code = request.POST.get("buyer_code", "").strip().upper()
+        profile.phone = request.POST.get("phone", "").strip()
+
+        profile.can_view_reports = request.POST.get("can_view_reports") == "on"
+        profile.can_edit_all_purchases = request.POST.get("can_edit_all_purchases") == "on"
+        profile.can_reopen_purchases = request.POST.get("can_reopen_purchases") == "on"
+
+        profile.save()
+
+        messages.success(request, f"{user.username} updated successfully.")
+        return redirect("manage_users")
 
     users = User.objects.select_related("buyerprofile").all().order_by("username")
 
@@ -1633,9 +1665,9 @@ def manage_users(request):
 def add_buyer(request):
     access = get_user_profile_flags(request.user)
 
-    if not can_view_reports(access):
+    if not access["can_edit_all_purchases"]:
         messages.error(request, "You do not have permission to add buyers.")
-        return redirect("admin_utilities")
+        return redirect("admin_dashboard")
 
     from django.contrib.auth.models import User
     from .models import BuyerProfile
@@ -1644,9 +1676,14 @@ def add_buyer(request):
         username = request.POST.get("username", "").strip()
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
+        buyer_code = request.POST.get("buyer_code", "").strip().upper()
 
         if not username:
             messages.error(request, "Username is required.")
+            return redirect("add_buyer")
+
+        if not buyer_code:
+            messages.error(request, "Buyer code is required.")
             return redirect("add_buyer")
 
         if User.objects.filter(username=username).exists():
@@ -1655,17 +1692,38 @@ def add_buyer(request):
 
         user = User.objects.create_user(
             username=username,
-            password="changeme123",  # force reset later
+            password="changeme123",
             first_name=first_name,
             last_name=last_name,
         )
 
-        # BuyerProfile auto-creates via signal
+        profile, created = BuyerProfile.objects.get_or_create(user=user)
+        profile.buyer_code = buyer_code
+        profile.can_view_reports = request.POST.get("can_view_reports") == "on"
+        profile.can_edit_all_purchases = request.POST.get("can_edit_all_purchases") == "on"
+        profile.can_reopen_purchases = request.POST.get("can_reopen_purchases") == "on"
+        profile.save()
+
         messages.success(request, f"Buyer {username} created successfully.")
-        return redirect("admin_utilities")
+        return redirect("manage_users")
 
     return render(request, "purchases/admin_add_buyer.html", {
         "access": access,
+        "buyer": access["profile"],
+    })
+
+
+@login_required
+def system_settings(request):
+    access = get_user_profile_flags(request.user)
+
+    if not access["can_edit_all_purchases"]:
+        messages.error(request, "You do not have permission to access system settings.")
+        return redirect("admin_dashboard")
+
+    return render(request, "purchases/admin_system_settings.html", {
+        "access": access,
+        "buyer": access["profile"],
     })
 
 

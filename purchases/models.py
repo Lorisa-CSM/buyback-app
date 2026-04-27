@@ -41,6 +41,7 @@ class BuyerProfile(models.Model):
         related_name="buyerprofile",
     )
     buyer_code = models.CharField(max_length=10, unique=True)
+    phone = models.CharField(max_length=25, blank=True)
 
     can_view_reports = models.BooleanField(default=False)
     can_edit_all_purchases = models.BooleanField(default=False)

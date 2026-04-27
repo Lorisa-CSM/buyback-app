@@ -41,12 +41,6 @@ body {
 }
 
 /* HEADER */
-.admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
 .admin-title {
     font-size: 26px;
     font-weight: 800;
@@ -54,15 +48,13 @@ body {
 }
 
 .admin-section {
-    margin-bottom: 14px;
+    margin-bottom: 18px;
+    padding: 16px 20px
 }
 
 .admin-section .section-inner{
-    border-radius: 10px;
-    padding: 12px 20px;
-    border-radius: 10px;
     border: 1px solid #eef2f7;
-    box-shadow: 0 2px 8px rgba (16, 24, 40, 0.04);
+    box-shadow: 0 2px 8px rgba(16, 24, 40, 0.04);
     padding-top: 16px;
     padding-bottom: 16px;
 }
@@ -89,22 +81,52 @@ body {
 .admin-tools {
     position: relative;
     margin-left: 10px;
+    position: relative;
+    z-index: 200;
 }
 
 .admin-tools-dropdown {
     display: none;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: all 0.15s ease;
     position: absolute;
-    top: 110%;
-    right: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #142033;
+    top: calc(100% + 8px);
+    min-width: 180px;
+    z-index: 1000;
     background: #fff;
     border: 1px solid #e5ebf3;
     border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     padding: 8px;
+    text-decoration: none;
 }
 
 .admin-tools.open .admin-tools-dropdown {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.admin-tools-dropdown a{
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #142033;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.admin-tools-dropdown a:hover{
+    background: #f4f7fb;
+    text-decoration: none;
 }
 
 /* KPI */
@@ -126,7 +148,7 @@ body {
     padding: 16px 16px 14px;
     border: 1px solid #f0f3f8;
     border-top: 6px solid transparent;
-    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.6);
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.06);
     background: #fff;
     overflow: hidden;
     position: relative;
@@ -181,15 +203,15 @@ body {
 .toolbar-top {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
-    gap: 12px;
+    gap: 16px;
     align-items: end;
 }
 
 .toolbar-card {
-    background: #ffffff;
+    background: transparent;
     border-radius: 16px;
-    border: 1px solid #eef2f7;
-    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.04);
+    border: none;
+    box-shadow: none;
     padding: 14px 16px;
 }
 
@@ -227,7 +249,7 @@ body {
     box-sizing: border-box;
 }
 
-.field input:focus
+.field input:focus,
 .field select:focus {
     outline: none;
     border-color: #002D62;
@@ -295,7 +317,7 @@ button.secondary {
 
 .btn-secondary {
     border-radius: 10px;
-    padding: 0px 12px;
+    padding: 0px 14px;
     border: 1px solid #d0d7e2;
     color: #002d62;
     background-color: #fff;
@@ -303,6 +325,9 @@ button.secondary {
     border-radius: 8px;
     font-weight: 600;
     font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
 }
 
 .btn-secondary:hover {
@@ -340,6 +365,48 @@ button.secondary {
 }
 
 /* TABLE */
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-bottom: 18px;
+}
+
+.table-header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.table-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.table-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #142033;
+}
+
+.table-subtitle{
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #667085;
+}
+
+.tabs-row{
+    display: flex;
+    gap: 10px;
+    margin: 0 0 18px;
+}
+
+.tabs-row-under-title{
+    padding-top: 2px;
+}
+
 .table-wrap {
     border: 1px solid #e5ebf3;
     border-radius: 12px;
@@ -351,28 +418,76 @@ button.secondary {
     margin-bottom: 8px;
 }
 
+.table-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+
 .admin-table th {
     background: #f1f5f9;
     font-size: 12px;
-    padding: 12px;
-    font-weight: 700;
+    padding: 12px 12px;
     color: #344054;
     text-align: left;
     font-weight: 600;
 }
 
 .admin-table td {
-    padding: 10px;
+    padding: 12px 12px;
     border-top: 1px solid #eef2f7;
     font-size: 14px;
     color: #142033;
     text-align: left;
+    white-space: nowrap;
+}
+
+.admin-table th.col-status,
+.admin-table td.col-status {
+    text-align: center;
+}
+
+.admin-table th:nth-child(4),
+.admin-table td:nth-child(4){
+    max-width: 220px;
+    width: 220px;
+}
+
+.admin-table td:nth-child(4) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+tr[data-href] {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+tr[data-href]:hover td {
+    background-color: #f4f7fb;
 }
 
 /* MONEY */
-.col.money {
-    text-align: right;
+.col-money {
     font-weight: 600;
+}
+
+.col-money span.currancy {
+    opacity: 0.6;
+    font-weight: 500;
+}
+
+.admin-table th.col-money,
+.admin-table td.col-money {
+    text-align: right !important;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    white-space: nowrap;
+    width: 130px;
 }
 
 /* STATUS */
@@ -384,11 +499,6 @@ button.secondary {
 .cell-strong {
     text-align: center;
     font-weight: 700;
-}
-
-/* STATUS COLUMN CENTER */
-.col-status {
-    text-align: center;
 }
 
 /* STATUS PILLS */
@@ -407,7 +517,7 @@ button.secondary {
 
 .status-balanced {
     background: rgba(22, 163, 74, 0.10);
-    color: #16a34a
+    color: #16a34a;
 }
 
 .status-over {
@@ -415,31 +525,125 @@ button.secondary {
     color: #92400e;
 }
 
+/* WORKFLOW STATUS */
+
+.workflow-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 78px;
+    height: 26px;
+    padding: 0px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    text-transform:capitalize
+}
+
+/* Draft */
+.workflow-draft {
+    background: rgba(100, 116, 139, 0.12);
+    color: #475569;
+}
+
+/* In Progress / Ready */
+.workflow-in-progress,
+.workflow-ready-for-processing {
+    background: rgba(217, 119, 6, 0.12);
+    color: #92400e;
+}
+
+/* Completed */
+.workflow-completed,
+.workflow-finalized {
+    background: rgba(22, 163, 74, 0.10);
+    color: #15803d;
+}
+
+.kpi-value.danger { color: #D21848; }
+.kpi-value.warning { color: #e58e0a; }
+.kpi-value.success { color: #15803d; }
+.kpi-value.navy { color: #002D62; }
+
 /* MODULES */
 .admin-modules {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 10px;
+    gap: 24px;
+    margin-top: 16px;
+    align-items: stretch;
 }
 
 .module-card {
     background: #ffffff;
     border-radius: 18px;
-    padding: 22px;
+    padding: 20px 22px;
     border: 1px solid #e5ebf3;
-    box-shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+    box-shadow: 0 6px 20px rgba(16, 24, 40, 0.06);
+    display: flex;
+    flex-direction: column;
+}
+
+.module-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.module-item-copy {
+    margin-top: 3px;
+    margin-left: 24px;
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 400;
+    color: #667085;
+}
+
+.module-copy {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #667085;
+    margin: 4px 0 18px;
+}
+
+.module-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .module-list li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    border-radius: 10px;
+    padding: 14px 14px;
+    border-radius: 12px;
     border: 1px solid #eef2f7;
     margin-bottom: 10px;
     background: #f9fbfd;
+    transition: all 0.15s ease;
+}
+
+.module-list li:hover {
+    background: #f4f7fb;
+    border-color: #dbe3ee;
+}
+
+.module-item-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #142033;
+}
+
+.module-item-label svg {
+    width: 16px;
+    height: 16px;
+    stroke: #002d62;
+    flex-shrink: 0;
 }
 
 .table-panel {
@@ -449,6 +653,76 @@ button.secondary {
 .table-panel.active {
     display: block;
 }
+
+.utilities-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.utility-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.utility-row:hover {
+    background-color: #f8fafc;
+}
+
+.utility-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.utility-action button {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid #d0d7e2;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #002d62;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.utility-action button:hover {
+    background: #002d62;
+    color: #ffffff;
+    border-color: #002d62;
+}
+
+.utility-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #142033;
+    display:flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.utility-title svg {
+    width: 16px;
+    height: 16px;
+    stroke: #002d62;
+}
+
+.utility-desc {
+    font-size: 12px;
+    color: #6b778c;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #142033;
+}
+
 
 /* RESPONSIVE (iPad fix) */
 @media (max-width: 1024px) {
@@ -470,15 +744,27 @@ button.secondary {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 0 0 12px 0;
+    gap: 10px;
+    padding-right: 0;
+}
+
+.bulk-toolbar.compact {
+    display:flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px 0;
 }
 
 .bulk-toolbar-left {
-    font-size: 13px;
+    display: none;
 }
 
 .bulk-toolbar-actions {
     display: flex;
+    justify-content: flex-end;
+    align-items: center;
     gap: 10px;
 }
 
@@ -516,8 +802,8 @@ button.secondary {
 
                 <div class="admin-header-right">
                     {% if access.can_edit_all_purchases %}             
-                    <div class="admin-tools" id="admin-tools">
-                        <button class ="btn-secondary"id="adminToolsToggle">
+                    <div class="admin-tools" id="adminTools">
+                        <button class="btn-secondary" id="adminToolsToggle">
                             Admin Tools
                         </button>
 
@@ -637,23 +923,23 @@ button.secondary {
     <section class="admin-section">
         <div class="section-inner">
             <div class="tabs-card">
-
-                <div class="tabs-row">
-                    <button type="button" class="tab-button" data-tab="fix-required">Fix Required</button>
-                    <button type="button" class="tab-button" data-tab="in-progress">In Progress</button>
-                    <button type="button" class="tab-button" data-tab="completed">Completed</button>
-                    <button type="button" class="tab-button" data-tab="all-purchases">All Purchases</button>
-                </div>
+                        
+                    <div class="tabs-row tabs-row-under-title">
+                        <button type="button" class="tab-button" data-tab="fix-required">Fix Required</button>
+                        <button type="button" class="tab-button" data-tab="in-progress">In Progress</button>
+                        <button type="button" class="tab-button" data-tab="completed">Completed</button>
+                        <button type="button" class="tab-button" data-tab="all-purchases">All Purchases</button>
+                    </div>
+                <div class="table-panel-inner"></div>
 
                 <!-- FIX REQUIRED -->
                 <div class="table-panel" id="panel-fix-required">
-                    <div class="table-panel-inner">
+                     <div class="table-panel-inner"></div>
                         <div class="table-header">
                             <div>
                                 <h2 class="table-title">Fix Required</h2>
                                 <p class="table-subtitle">Purchases with allocation mismatch or issues that need review.</p>
                             </div>
-                            <span class="table-count">{{ fix_required_count }} item{{ fix_required_count|pluralize }}</span>
                         </div>
 
                         {% if fix_required_purchases %}
@@ -667,7 +953,6 @@ button.secondary {
                                             <th>Purchase Total</th>
                                             <th>Balance Status</th>
                                             <th>Created Date</th>
-
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -676,7 +961,9 @@ button.secondary {
                                                 <td class="cell-strong">{{ p.isp_number }}</td>
                                                 <td>{{ p.location }}</td>
                                                 <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
-                                                <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
+                                                <td class="col-money">
+                                                    <span class="currency">$</span>{{ p.purchase_total_amount|floatformat:2 }}
+                                                </td>
                                                 <td class="col-status">
                                                     {% if p.reconciliation_status %}
                                                         {% if p.reconciliation_status|lower == "under" %}
@@ -710,9 +997,8 @@ button.secondary {
                         <div class="table-header">
                             <div>
                                 <h2 class="table-title">In Progress</h2>
-                                <p class="table-subtitle">Balanced draft purchases that are actively being completed..</p>
+                                <p class="table-subtitle">Balanced draft purchases that are actively being completed.</p>
                             </div>
-                            <span class="table-count">{{ in_progress_count }} item{{ in_progress_count|pluralize }}</span>
                         </div>
 
                         {% if in_progress_purchases %}
@@ -734,7 +1020,9 @@ button.secondary {
                                                 <td class="cell-strong">{{ p.isp_number }}</td>
                                                 <td>{{ p.location }}</td>
                                                 <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
-                                                <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
+                                                <td class="col-money">
+                                                    <span class="currency">$</span>{{ p.purchase_total_amount|floatformat:2 }}
+                                                </td>
                                                 <td class="col-status">
                                                     {% if p.reconciliation_status %}
                                                         {% if p.reconciliation_status|lower == "under" %}
@@ -767,44 +1055,40 @@ button.secondary {
                 <div class="table-panel" id="panel-completed">
                     <div class="table-panel-inner">
                         <div class="table-header">
-                            <div>
+                            <div class="table-header-left">
                                 <h2 class="table-title">Completed</h2>
                                 <p class="table-subtitle">Finalized purchases ready for reporting, accounting, and export workflows.</p>
                             </div>
-                            <span class="table-count">{{ completed_count }} item{{ completed_count|pluralize }}</span>
+
+                            <div class="table-header-actions">
+                                <button type="submit" class="bulk-action-btn primary">Export Selected</button>
+
+                                <a href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&q={{ query|urlencode }}"
+                                class="bulk-action-btn secondary">
+                                    Export All
+                                </a>
+                            </div>
                         </div>
 
                         {% if completed_purchases %}
                             <form method="post" action="{% url 'bulk_export_completed_purchases' %}">
                                 {% csrf_token %}
 
-                                <div class="bulk-toolbar">
-                                    <div class="bulk-toolbar-left">
-                                        <label>
-                                            <input type="checkbox" id="selectAllCompleted" onclick="toggleAllCompleted(this)">
-                                            Select All
-                                        </label>
-                                    </div>
-
-                                    <div class="bulk-toolbar-actions">
-                                        <button type="submit" class="bulk-action-btn primary">Export Selected</button>
-                                        <a href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}&buyer={{ buyer_filter|urlencode }}&location={{ location_filter|urlencode }}&q={{ query|urlencode }}" class="bulk-action-btn secondary">Export All</a>
-                                    </div>
-                                </div>
-
                                 <div class="table-wrap">
+
+                                    <table class="admin-table">
                                     <table class="admin-table">
                                         <thead>
                                             <tr>
-                                                <th>Select</th>
-                                                <th>ISP</th>
+                                                <th class="col-status">Select</th>
+                                                <th class="col-status">ISP</th>
                                                 <th>Location</th>
                                                 <th>Seller</th>
-                                                <th>Status</th>
+                                                <th class="col-status">Status</th>
                                                 <th class="col-money">Purchase Total</th>
-                                                <th>Created</th>
-                                                <th>Finalized</th>
-                                                <th>Exported</th>
+                                                <th class="col-status">Created</th>
+                                                <th class="col-status">Finalized</th>
+                                                <th class="col-status">Exported</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -813,11 +1097,17 @@ button.secondary {
                                                     <td onclick="event.stopPropagation();">
                                                         <input type="checkbox" name="selected_purchase_ids" value="{{ p.id }}">
                                                     </td>
-                                                    <td>{{p.status}}</td>
                                                     <td class="cell-strong">{{ p.isp_number }}</td>
                                                     <td>{{ p.location }}</td>
                                                     <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
-                                                    <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
+                                                    <td class="col-status">
+                                                        <span class="workflow-pill workflow-{{ p.workflow_status|lower|slugify }}">
+                                                            {{ p.workflow_status|default:"-" }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="col-money">
+                                                        <span class="currency">$</span>{{ p.purchase_total_amount|floatformat:2 }}
+                                                    </td>
                                                     <td>{{p.created_at|date:"M d, Y" }}</td>
                                                     <td>{{p.finalized_at|date:"M d, Y"}}</td>
                                                     <td>{{p.exported_at|date:"M d, Y" }}</td>
@@ -835,13 +1125,12 @@ button.secondary {
 
                 <!-- ALL -->
                 <div class="table-panel" id="panel-all-purchases">
-                    <div class="table-panel-inner">
+                     <div class="table-panel-inner"></div>
                         <div class="table-header">
                             <div>
                                 <h2 class="table-title">All Purchases</h2>
                                 <p class="table-subtitle">Full view across all matching purchases using the current filter set.</p>
                             </div>
-                            <span class="table-count">{{ total_purchases }} result{{ total_purchases|pluralize }}</span>
                         </div>
 
                         {% if all_purchases %}
@@ -849,11 +1138,12 @@ button.secondary {
                                 <table class="admin-table">
                                     <thead>
                                         <tr>
-                                            <th>ISP</th>
+                                            <th class="col-status">ISP</th>
                                             <th>Location</th>
                                             <th>Seller</th>
-                                            <th>Balance Status</th>
-                                            <th>Status</th>
+                                            <th class="col-status">Created</th>
+                                            <th class="col-status">Balance Status</th>
+                                            <th class="col-status">Status</th>
                                             <th class="col-money">Amount</th>
                                         </tr>
                                     </thead>
@@ -863,6 +1153,7 @@ button.secondary {
                                                 <td class="cell-strong">{{ p.isp_number }}</td>
                                                 <td>{{ p.location }}</td>
                                                 <td>{{ p.seller_first_name }} {{ p.seller_last_name }}</td>
+                                                <td>{{p.created_at|date:"M d, Y" }}</td>
                                                 <td class="col-status">
                                                     {% if p.reconciliation_status %}
                                                         {% if p.reconciliation_status|lower == "under" %}
@@ -878,8 +1169,14 @@ button.secondary {
                                                         <span class="status-pill">—</span>
                                                     {% endif %}
                                                 </td>
-                                                <td>{{ p.status }}</td>
-                                                <td class="col-money">${{ p.purchase_total_amount|floatformat:2 }}</td>
+                                                <td class="col-status">
+                                                       <span class="workflow-pill workflow-{{ p.workflow_status|lower|slugify }}">
+                                                           {{ p.workflow_status|default:"-" }}
+                                                        </span>
+                                                </td>
+                                                <td class="col-money">
+                                                    <span class="currency">$</span>{{ p.purchase_total_amount|floatformat:2 }}
+                                                </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -909,24 +1206,33 @@ button.secondary {
                             <ul class="module-list">
                                 <li>
                                     <div>
-                                        <div class="module-item-label">Manage Users</div>
-                                        <div class="module-item-copy">Roles, access, and buyer administration.</div>
+                                        <div class="module-item-label">
+                                            <i data-feather="users"></i>
+                                            Manage Users
+                                        </div>
+                                        <div class="module-item-copy">Roles, passwords, status, and user administration.</div>
                                     </div>
                                     <a href="{% url 'manage_users' %}" class="btn-secondary">Open</a>
                                 </li>
 
                                 <li>
                                     <div>
-                                        <div class="module-item-label">Add Buyer</div>
-                                        <div class="module-item-copy">Create a buyer login and profile.</div>
+                                        <div class="module-item-label">
+                                            <i data-feather="user-plus"></i>
+                                            Add Buyer
+                                        </div>
+                                        <div class="module-item-copy">Create a new buyer profile and grant access.</div>
                                     </div>
                                     <a href="{% url 'add_buyer' %}" class="btn-secondary">Open</a>
                                 </li>
 
                                 <li>
                                     <div>
-                                        <div class="module-item-label">System Settings</div>
-                                        <div class="module-item-copy">Reserved admin-level controls.</div>
+                                        <div class="module-item-label">
+                                            <i data-feather="settings"></i>
+                                            System Settings
+                                        </div>
+                                        <div class="module-item-copy">Admin-level controls.</div>
                                     </div>
                                     <a href="{% url 'system_settings' %}" class="btn-secondary">Open</a>
                                 </li>
@@ -942,24 +1248,33 @@ button.secondary {
                             <ul class="module-list">
                                 <li>
                                     <div>
-                                        <div class="module-item-label">Accounting Export</div>
-                                        <div class="module-item-copy">Finalized purchases by date range.</div>
+                                        <div class="module-item-label">
+                                            <i data-feather="file-text"></i>    
+                                            Accounting Export
+                                        </div>
+                                        <div class="module-item-copy">Finalized purchases by finalized date with combined payment columns.</div>
                                     </div>
                                     <a href="{% url 'export_accounting_report_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn-secondary">Export</a>
                                 </li>
 
                                 <li>
                                     <div>
-                                        <div class="module-item-label">Finalized Orders Export</div>
-                                        <div class="module-item-copy">Order-level finalized export.</div>
+                                        <div class="module-item-label">
+                                            <i data-feather="download"></i>
+                                            Finalized Orders Export
+                                        </div>
+                                        <div class="module-item-copy">Order-level finalized export for operational review.</div>
                                     </div>
                                     <a href="{% url 'export_filtered_finalized_csv' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn-secondary">Export</a>
                                 </li>
 
                                 <li>
                                     <div>
-                                        <div class="module-item-label">Product Export</div>
-                                        <div class="module-item-copy">Product-level inventory export.</div>
+                                        <div class="module-item-label">
+                                            <i data-feather="package"></i>
+                                            Finalized Order Products
+                                        </div>
+                                        <div class="module-item-copy">Product-level inventory export by finalized date for inventory import.</div>
                                     </div>
                                     <a href="{% url 'bulk_export_completed_purchases' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn-secondary">Export</a>
                                 </li>
@@ -975,10 +1290,6 @@ button.secondary {
 </div>
 
 <script>
-function toggleAllCompleted(source) {
-    const checkboxes = document.querySelectorAll('input[name="selected_purchase_ids"]');
-    checkboxes.forEach(cb => cb.checked = source.checked);
-}
 
 function activateTab(tab) {
     const buttons = document.querySelectorAll(".tab-button");
@@ -986,7 +1297,6 @@ function activateTab(tab) {
     const kpiCards = document.querySelectorAll("[data-kpi-tab]");
 
     panels.forEach(panel => {
-        panel.style.display = "none";
         panel.classList.remove("active");
     });
 
@@ -1003,7 +1313,6 @@ function activateTab(tab) {
     const activeCard = document.querySelector('[data-kpi-tab="' + tab + '"]');
 
     if (activePanel) {
-        activePanel.style.display = "block";
         activePanel.classList.add("active");
     }
 
@@ -1018,15 +1327,13 @@ function activateTab(tab) {
     localStorage.setItem("adminDashboardActiveTab", tab);
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+window.addEventListener("load", function () {
     const tools = document.getElementById("adminTools");
     const toolsToggle = document.getElementById("adminToolsToggle");
     const moreFiltersToggle = document.getElementById("moreFiltersToggle");
     const moreFiltersPanel = document.getElementById("moreFiltersPanel");
     const tabButtons = document.querySelectorAll(".tab-button");
     const kpiCards = document.querySelectorAll("[data-kpi-tab]");
-    const selectAllCompleted = document.getElementById("selectAllCompleted");
-    const completedCheckboxes = document.querySelectorAll('input[name="selected_purchase_ids"]');
 
     if (tools && toolsToggle) {
         toolsToggle.addEventListener("click", function (event) {
@@ -1083,21 +1390,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    if (selectAllCompleted && completedCheckboxes.length) {
-        selectAllCompleted.addEventListener("change", function () {
-            completedCheckboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCompleted.checked;
-            });
-        });
-
-        completedCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener("change", function () {
-                const allChecked = Array.from(completedCheckboxes).every(cb => cb.checked);
-                const anyChecked = Array.from(completedCheckboxes).some(cb => cb.checked);
-                selectAllCompleted.checked = allChecked;
-                selectAllCompleted.indeterminate = anyChecked && !allChecked;
-            });
-        });
+    
+    if (window.feather) {
+        feather.replace();
     }
 });
 </script>
