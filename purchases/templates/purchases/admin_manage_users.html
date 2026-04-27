@@ -4,175 +4,187 @@
 
 {% block content %}
 
+
 <style>
+
+/* =========================
+   LAYOUT
+========================= */
+
 .admin-shell {
-    max-width: 1440px;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 24px;
+    padding: 28px 20px;
 }
 
 .section-inner {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid #e3e9f2;
-    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+    border-radius: 14px;
+    padding: 22px;
+    border: 1px solid #e4e9f2;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
 }
+
+/* =========================
+   HEADER
+========================= */
 
 .table-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
+    align-items: flex-start;
+    margin-bottom: 20px;
 }
 
 .table-title {
-    margin: 0;
     font-size: 22px;
     font-weight: 800;
-    color: #142033;
+    color: #0f172a;
+    margin: 0;
 }
 
 .table-subtitle {
-    margin: 6px 0 0;
-    font-size: 14px;
+    font-size: 13px;
     color: #667085;
+    margin-top: 4px;
 }
 
-.table-header-actions {
-    display: flex;
-    gap: 10px;
+/* =========================
+   BUTTONS
+========================= */
+
+.btn-primary {
+    background: #002D62;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .15s ease;
 }
 
-.btn-primary,
+.btn-primary:hover {
+    background: #001f47;
+}
+
 .btn-save {
     background: #002D62;
     color: #fff;
-    border: none;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.btn-primary {
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-weight: 700;
-}
-
-.btn-save {
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
 }
 
-.btn-primary:hover,
 .btn-save:hover {
     background: #001f47;
 }
 
-.table-wrap {
-    border: 1px solid #e5ebf3;
-    border-radius: 12px;
-    overflow: hidden;
+.btn-reset {
+    background: #eef2f7;
+    color: #344054;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
 }
+
+.btn-reset:hover {
+    background: #e4e9f1;
+}
+
+/* =========================
+   TABLE WRAPPER
+========================= */
+
+.table-wrap {
+    border: 1px solid #e4e9f2;
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+/* =========================
+   TABLE CORE
+========================= */
 
 .admin-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    min-width: 1050px;
+}
+
+/* HEADER */
+
+.admin-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    z-index: 2;
 }
 
 .admin-table th {
-    background: #f8fafc;
     font-size: 11px;
-    padding: 12px;
-    color: #475467;
-    font-weight: 700;
-    text-align: left;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    border-bottom: 1px solid #e5ebf3;
+    letter-spacing: .06em;
+    padding: 12px 10px;
+    text-align: left;
+    color: #475467;
+    border-bottom: 1px solid #e4e9f2;
 }
 
+/* ROWS */
+
 .admin-table td {
-    padding: 14px 12px;
-    border-bottom: 1px solid #eef2f7;
-    font-size: 14px;
+    padding: 12px 10px;
+    border-bottom: 1px solid #f1f4f9;
+    font-size: 13px;
     vertical-align: middle;
 }
 
-.admin-table th,
-.admin-table td {
-    border-right: 1px solid #f1f5f9;
-}
-
-.admin-table th:last-child,
-.admin-table td:last-child {
-    border-right: none;
-}
-
-.admin-table tbody tr:nth-child(even) {
-    background: #fbfcfe;
-}
-
 .admin-table tbody tr:hover {
-    background: #f4f7fb;
+    background: #f7f9fc;
 }
+
+/* =========================
+   COLUMN SIZING (CLEAN)
+========================= */
 
 .admin-table th:nth-child(1),
-.admin-table td:nth-child(1) {
-    width: 120px;
-}
+.admin-table td:nth-child(1) { width: 110px; }
 
 .admin-table th:nth-child(2),
-.admin-table td:nth-child(2) {
-    width: 260px;
-}
+.admin-table td:nth-child(2) { width: 220px; }
 
 .admin-table th:nth-child(3),
-.admin-table td:nth-child(3) {
-    width: 230px;
-}
+.admin-table td:nth-child(3) { width: 210px; }
 
 .admin-table th:nth-child(4),
-.admin-table td:nth-child(4) {
-    width: 150px;
-}
+.admin-table td:nth-child(4) { width: 140px; }
 
 .admin-table th:nth-child(5),
-.admin-table td:nth-child(5) {
-    width: 115px;
-}
+.admin-table td:nth-child(5) { width: 60px; }
 
 .admin-table th:nth-child(6),
-.admin-table td:nth-child(6),
-.admin-table th:nth-child(7),
-.admin-table td:nth-child(7),
-.admin-table th:nth-child(8),
-.admin-table td:nth-child(8),
-.admin-table th:nth-child(9),
-.admin-table td:nth-child(9) {
-    width: 70px;
-    text-align: center;
-}
+.admin-table td:nth-child(6) { width: auto; }
 
-.admin-table th:nth-child(10),
-.admin-table td:nth-child(10) {
-    width: 80px;
+.admin-table th:nth-child(7),
+.admin-table td:nth-child(7) {
+    width: 150px;
     text-align: right;
 }
+
+/* =========================
+   INPUTS
+========================= */
 
 .admin-table input[type="text"],
 .admin-table input[type="email"] {
     width: 100%;
     padding: 6px 8px;
     border-radius: 6px;
-    border: 1px solid #d0d7e2;
-    font-size: 13px;
-    background: #ffffff;
-    transition: all 0.15s ease;
+    border: 1px solid #d5dde7;
+    font-size: 12px;
+    transition: all .15s ease;
 }
 
 .admin-table input::placeholder {
@@ -182,139 +194,282 @@
 .admin-table input:focus {
     outline: none;
     border-color: #002D62;
-    box-shadow: 0 0 0 2px rgba(0, 45, 98, 0.12);
+    box-shadow: 0 0 0 2px rgba(0,45,98,.12);
 }
 
-.admin-table td input[type="checkbox"] {
-    transform: scale(1.1);
-    cursor: pointer;
-}
+/* NAME GROUP */
 
 .name-group {
     display: flex;
     gap: 6px;
 }
 
-.name-group input {
-    flex: 1;
-}
+/* USERNAME */
 
 .cell-strong {
     font-weight: 700;
     color: #002D62;
 }
 
-@media (max-width: 1100px) {
-    .table-wrap {
-        overflow-x: auto;
-    }
+/* =========================
+   BUYER CODE
+========================= */
 
+.buyer-code-input {
+    width: 52px;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* =========================
+   PERMISSIONS (THIS IS KEY)
+========================= */
+
+.permissions {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.perm-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #344054;
+    white-space: nowrap;
+}
+
+/* =========================
+   TOGGLE SWITCH (POLISHED)
+========================= */
+
+.toggle {
+    appearance: none;
+    width: 34px;
+    height: 18px;
+    background: #d0d5dd;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.toggle:checked {
+    background: #002D62;
+}
+
+.toggle::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: #ffffff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: all .2s ease;
+}
+
+.toggle:checked::after {
+    left: 18px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+/* =========================
+   PASSWORD ALERT
+========================= */
+
+.password-alert {
+    background: #002D62;
+    color: #fff;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.password-alert button {
+    background: #ffffff;
+    color: #002D62;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* =========================
+   UTILITIES
+========================= */
+
+.right { text-align: right; }
+
+@media (max-width: 1100px) {
     .admin-table {
-        min-width: 1100px;
+        min-width: 1050px;
     }
 }
+
 </style>
 
+
 <div class="admin-shell">
-    <div class="section-inner">
+<div class="section-inner">
 
-        <div class="table-header">
-            <div>
-                <h2 class="table-title">Manage Users</h2>
-                <p class="table-subtitle">
-                    Control buyer permissions and access.
-                </p>
-            </div>
+{% if request.session.temp_password %}
+<div class="password-alert">
+    <div>
+        <strong>Password Reset</strong><br>
+        {{ request.session.temp_user }} →
+        <strong id="tempPass">{{ request.session.temp_password }}</strong>
+    </div>
+    <button onclick="copyTemp()">Copy</button>
+</div>
+{% endif %}
 
-            <div class="table-header-actions">
-                <a href="{% url 'add_buyer' %}" class="btn-primary">Add Buyer</a>
-            </div>
-        </div>
+<div class="table-wrap">
 
-        <div class="table-wrap">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Buyer Code</th>
-                        <th>Reports</th>
-                        <th>Edit All</th>
-                        <th>Reopen</th>
-                        <th>Active</th>
-                        <th></th>
-                    </tr>
-                </thead>
+<table class="admin-table">
 
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="user_id" value="{{ user.id }}">
+<thead>
+<tr>
+    <th>Username</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Phone</th>
+    <th>Code</th>
+    <th>Permissions</th>
+    <th class="right">Actions</th>
+</tr>
+</thead>
 
-                            <td class="cell-strong">{{ user.username }}</td>
+<tbody>
+{% for user in users %}
+<tr>
 
-                            <td>
-                                <div class="name-group">
-                                    <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First">
-                                    <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last">
-                                </div>
-                            </td>
-                            <td>
-                                <input type="email" name="email" value="{{ user.email }}" placeholder="Email">
-                            </td>
+<form method="POST">
+{% csrf_token %}
+<input type="hidden" name="user_id" value="{{ user.id }}">
 
-                            <td>
-                                <input type="text" name="phone"
-                                    value="{{ user.buyerprofile.phone|default_if_none:'' }}"
-                                    placeholder="Phone">
-                            </td>
+<td class="cell-strong">{{ user.username }}</td>
 
-                            <td>
-                                <input class="inline-input" type="text"
-                                       name="buyer_code"
-                                       value="{{ user.buyerprofile.buyer_code|default:'' }}">
-                            </td>
+<td>
+    <div class="name-group">
+        <input type="text" name="first_name" value="{{ user.first_name }}">
+        <input type="text" name="last_name" value="{{ user.last_name }}">
+    </div>
+</td>
 
-                            <td>
-                                <input class="toggle" type="checkbox" name="can_view_reports"
-                                {% if user.buyerprofile.can_view_reports %}checked{% endif %}>
-                            </td>
+<td>
+    <input type="email" name="email" value="{{ user.email }}">
+</td>
 
-                            <td>
-                                <input class="toggle" type="checkbox" name="can_edit_all_purchases"
-                                {% if user.buyerprofile.can_edit_all_purchases %}checked{% endif %}>
-                            </td>
+<td>
+    <input type="text" name="phone"
+    value="{{ user.buyerprofile.phone|default_if_none:'' }}">
+</td>
 
-                            <td>
-                                <input class="toggle" type="checkbox" name="can_reopen_purchases"
-                                {% if user.buyerprofile.can_reopen_purchases %}checked{% endif %}>
-                            </td>
+<td>
+    <input class="buyer-code-input"
+        type="text"
+        maxlength="3"
+        name="buyer_code"
+        value="{{ user.buyerprofile.buyer_code|default:'' }}">
+</td>
 
-                            <td>
-                                <input class="toggle" type="checkbox" name="is_active"
-                                {% if user.is_active %}checked{% endif %}>
-                            </td>
+<!-- 🔥 PERMISSIONS GROUP -->
+<td>
+    <div class="permissions">
 
-                            <td>
-                                <button type="submit" class="btn-save">Save</button>
-                            </td>
+        <label class="perm-item">
+            <span>Reports</span>
+            <input class="toggle" type="checkbox" name="can_view_reports"
+            {% if user.buyerprofile.can_view_reports %}checked{% endif %}>
+        </label>
 
-                        </form>
-                    </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="10">No users found.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <label class="perm-item">
+            <span>Edit All</span>
+            <input class="toggle" type="checkbox" name="can_edit_all_purchases"
+            {% if user.buyerprofile.can_edit_all_purchases %}checked{% endif %}>
+        </label>
+
+        <label class="perm-item">
+            <span>Reopen</span>
+            <input class="toggle" type="checkbox" name="can_reopen_purchases"
+            {% if user.buyerprofile.can_reopen_purchases %}checked{% endif %}>
+        </label>
+
+        <label class="perm-item">
+            <span>Active</span>
+            <input class="toggle" type="checkbox" name="is_active"
+            {% if user.is_active %}checked{% endif %}>
+        </label>
 
     </div>
+</td>
+
+<td class="right">
+    <div class="actions">
+
+        <button type="submit" class="btn-save">Save</button>
+
+        <button type="submit"
+            formaction="{% url 'admin_reset_user_password' %}"
+            name="user_id"
+            value="{{ user.id }}"
+            class="btn-reset">
+            Reset
+        </button>
+
+    </div>
+</td>
+
+</form>
+
+</tr>
+{% empty %}
+<tr>
+<td colspan="7">No users found.</td>
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
 </div>
+
+</div>
+</div>
+
+<script>
+function copyTemp(){
+    navigator.clipboard.writeText(
+        document.getElementById("tempPass").innerText
+    );
+}
+
+/* FORCE BUYER CODE RULES */
+document.querySelectorAll('.buyer-code-input').forEach(input=>{
+    input.addEventListener('input', ()=>{
+        input.value = input.value
+            .toUpperCase()
+            .replace(/[^A-Z]/g,'')
+            .slice(0,3);
+    });
+});
+</script>
 
 {% endblock %}

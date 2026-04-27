@@ -26,6 +26,7 @@ from .views import (
     manage_users,
     add_buyer,
     force_password_change,
+    admin_reset_user_password,
 )
 
 urlpatterns = [
@@ -46,6 +47,7 @@ urlpatterns = [
         name="accounts_logout",
     ),
     path("force-password-change/", force_password_change, name="force_password_change"),
+    path("admin/reset-password/", admin_reset_user_password, name="admin_reset_user_password"),
 
     # Purchase flow
     path("purchase/new/", purchase_home, name="purchase_home"),

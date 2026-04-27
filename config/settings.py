@@ -140,3 +140,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/post-login"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.office365.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "CSM_Trade_Hub_no-reply@outlook.com"
+EMAIL_HOST_PASSWORD = "Wolfpack1"
+DEFAULT_FROM_EMAIL = "CSM_Trade_Hub_no-reply@outlook.com"

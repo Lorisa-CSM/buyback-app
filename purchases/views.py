@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from django.views.decorators.http import require_POST
 from django.contrib.auth import update_session_auth_hash
 
@@ -193,6 +194,7 @@ def force_password_change(request):
     if request.method == "POST":
         new_password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
+        
 
         if not new_password:
             messages.error(request, "Password is required.")
@@ -211,6 +213,7 @@ def force_password_change(request):
 
         profile = user.buyerprofile
         profile.must_change_password = False
+        profile.password_last_changed = timezone.now()
         profile.save()
 
         messages.success(request, "Password updated successfully.")
@@ -944,14 +947,64 @@ def post_login_redirect(request):
     access = get_user_profile_flags(request.user)
     profile = access["profile"]
 
-    if profile and profile.must_change_password:
-        return redirect("force_password_change")
+    if profile:
+        # FIRST LOGIN FORCE
+        if profile.must_change_password:
+            return redirect("force_password_change")
+
+        # 6 MONTH EXPIRATION CHECK
+        if profile.password_last_changed:
+            six_months_ago = timezone.now() - timedelta(days=180)
+
+            if profile.password_last_changed < six_months_ago:
+                profile.must_change_password = True
+                profile.save()
+                return redirect("force_password_change")
+
+        else:
+            # If never set (older users)
+            profile.must_change_password = True
+            profile.save()
+            return redirect("force_password_change")
 
     if access["can_view_reports"]:
         return redirect("admin_dashboard")
 
     return redirect("buyer_dashboard")
 
+@login_required
+@require_POST
+def admin_reset_user_password(request):
+    access = get_user_profile_flags(request.user)
+    
+    if not access["can_edit_all_purchases"]:
+        messages.error(request, "You do not have permission.")
+        return redirect("manage_users")
+
+    from django.contrib.auth.models import User
+
+    user_id = request.POST.get("user_id")
+
+    if not user_id:
+        return redirect("manage_users")
+
+    user = get_object_or_404(User, id=user_id)
+
+    temp_password = get_random_string(12)
+    user.set_password(temp_password)
+    user.save()
+
+    profile = user.buyerprofile
+    profile.must_change_password = True
+    profile.save()
+
+    request.session["temp_password"] = temp_password
+    request.session["temp_user"] = user.username
+
+    messages.success(request, f"{user.username}'s password has been reset.")
+
+    return redirect("manage_users")
+    
 
 @login_required
 def admin_dashboard(request):
@@ -1647,7 +1700,6 @@ def admin_utilities(request):
         "buyer": access["profile"],
     })
 
-
 @login_required
 def manage_users(request):
     access = get_user_profile_flags(request.user)
@@ -1658,6 +1710,9 @@ def manage_users(request):
 
     from django.contrib.auth.models import User
     from .models import BuyerProfile
+
+    temp_password = request.session.pop("temp_password", None)
+    temp_user = request.session.pop("temp_user", None)
 
     if request.method == "POST":
         user_id = request.POST.get("user_id")
@@ -1693,8 +1748,9 @@ def manage_users(request):
     return render(request, "purchases/admin_manage_users.html", {
         "access": access,
         "users": users,
+        "temp_password": temp_password,
+        "temp_user": temp_user,
     })
-
 
 @login_required
 def add_buyer(request):
@@ -1769,17 +1825,4 @@ def system_settings(request):
     return render(request, "purchases/admin_system_settings.html", {
         "access": access,
         "buyer": access["profile"],
-    })
-
-
-@login_required
-def system_settings(request):
-    access = get_user_profile_flags(request.user)
-
-    if not can_view_reports(access):
-        messages.error(request, "You do not have permission to access system settings.")
-        return redirect("admin_utilities")
-
-    return render(request, "purchases/admin_system_settings.html", {
-        "access": access,
     })
