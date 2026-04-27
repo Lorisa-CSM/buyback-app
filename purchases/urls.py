@@ -25,6 +25,7 @@ from .views import (
     system_settings,
     manage_users,
     add_buyer,
+    force_password_change,
 )
 
 urlpatterns = [
@@ -44,6 +45,7 @@ urlpatterns = [
         auth_views.LogoutView.as_view(next_page="accounts_login"),
         name="accounts_logout",
     ),
+    path("force-password-change/", force_password_change, name="force_password_change"),
 
     # Purchase flow
     path("purchase/new/", purchase_home, name="purchase_home"),

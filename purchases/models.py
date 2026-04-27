@@ -40,6 +40,9 @@ class BuyerProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="buyerprofile",
     )
+
+    must_change_password = models.BooleanField(default=True)
+
     buyer_code = models.CharField(max_length=10, unique=True)
     phone = models.CharField(max_length=25, blank=True)
 

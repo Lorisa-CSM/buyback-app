@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.contrib.auth import update_session_auth_hash
 
 
 from .forms import PurchaseForm, PurchaseItemsForm, PurchaseItemFormSet, BulkCardForm
@@ -186,6 +187,36 @@ def get_filtered_finalized_purchases_from_request(request):
         "export_status": export_status,
         "query": query,
     }
+
+@login_required
+def force_password_change(request):
+    if request.method == "POST":
+        new_password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if not new_password:
+            messages.error(request, "Password is required.")
+            return redirect("force_password_change")
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect("force_password_change")
+
+        user = request.user
+        user.set_password(new_password)
+        user.save()
+
+        # update session so user stays logged in
+        update_session_auth_hash(request, user)
+
+        profile = user.buyerprofile
+        profile.must_change_password = False
+        profile.save()
+
+        messages.success(request, "Password updated successfully.")
+        return redirect("post_login_redirect")
+
+    return render(request, "purchases/force_password_change.html")
 
 
 @login_required
@@ -911,6 +942,10 @@ def buyer_dashboard(request):
 @login_required
 def post_login_redirect(request):
     access = get_user_profile_flags(request.user)
+    profile = access["profile"]
+
+    if profile and profile.must_change_password:
+        return redirect("force_password_change")
 
     if access["can_view_reports"]:
         return redirect("admin_dashboard")
@@ -1670,12 +1705,13 @@ def add_buyer(request):
         return redirect("admin_dashboard")
 
     from django.contrib.auth.models import User
-    from .models import BuyerProfile
 
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
         buyer_code = request.POST.get("buyer_code", "").strip().upper()
 
         if not username:
@@ -1695,13 +1731,22 @@ def add_buyer(request):
             password="changeme123",
             first_name=first_name,
             last_name=last_name,
+            email=email,
         )
 
-        profile, created = BuyerProfile.objects.get_or_create(user=user)
+        # Get auto-created profile
+        profile = user.buyerprofile
+        profile.must_change_password = True
+
+        # Set fields
+        profile.phone = phone
         profile.buyer_code = buyer_code
-        profile.can_view_reports = request.POST.get("can_view_reports") == "on"
-        profile.can_edit_all_purchases = request.POST.get("can_edit_all_purchases") == "on"
-        profile.can_reopen_purchases = request.POST.get("can_reopen_purchases") == "on"
+
+        # LOCK DOWN PERMISSIONS (buyers only)
+        profile.can_view_reports = False
+        profile.can_edit_all_purchases = False
+        profile.can_reopen_purchases = False
+
         profile.save()
 
         messages.success(request, f"Buyer {username} created successfully.")
